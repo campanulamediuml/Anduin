@@ -6,13 +6,14 @@ from ..dbserver.base import Base
 
 class data_manager(object):
     min_keep_connection = 10
+    keep_cycle = 10
 
     def __init__(self,db_config):
         self.t_data = db_config
         self.sql_pool = {}
         self.new()
         print('创建首批数据库链接实例')
-        IntervalTask(10,self.keep_connect)
+        IntervalTask(data_manager.keep_cycle,self.keep_connect)
     # def kill_hanged_connection(self):
     #     dead_sql = []
     #

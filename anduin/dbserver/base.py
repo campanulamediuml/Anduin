@@ -94,9 +94,6 @@ class Base(object):
 
         tail = tail[:-1] + ')'
         sql += tail
-
-        # 
-
         self.query(sql,show_sql)
         self.db.commit()
         return
@@ -142,7 +139,6 @@ class Base(object):
         sql = self.find_info(table,conditions,fields,None,order)
 
         sql += " limit 1"
-
         # 
         res = self.query(sql,show_sql)
         if res is None:
@@ -160,7 +156,7 @@ class Base(object):
         else:
             fieldList = fields
 
-        self.db.commit()
+        # self.db.commit()
         return dict(zip(fieldList, res[0]))
 
 
@@ -189,7 +185,7 @@ class Base(object):
             data = dict(zip(fieldList, data))
             result.append(data)
 
-        self.db.commit()
+        # self.db.commit()
         return result
 
     def insert(self, table, content, isCommit=True,show_sql=False):
@@ -206,7 +202,6 @@ class Base(object):
         self.query(sql,show_sql)
         if True == isCommit:
             self.db.commit()
-
         return
 
     def update(self, table, conditions, params, isCommit=True,show_sql=False):
@@ -234,7 +229,6 @@ class Base(object):
         self.query(sql,show_sql)
         if True == isCommit:
             self.db.commit()
-
         return
 
     def delete(self, table, condition, is_commit,show_sql=False):
@@ -255,7 +249,6 @@ class Base(object):
         self.query(sql,show_sql)
         if is_commit is True:
             self.db.commit()
-
         return
 
     def query(self, sql,show_sql=False):
@@ -300,7 +293,6 @@ class Base(object):
 
     def get_last_connect_time(self):
         return self.last_connect_time
-        
 
     def query_one(self, sql):
         self.db.ping(reconnect=True)
