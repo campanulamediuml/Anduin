@@ -3,3 +3,12 @@
 .idea/workspace.xml
 test_file.py
 *.pyc
+anduindata.egg-info/dependency_links.txt
+anduindata.egg-info/PKG-INFO
+anduindata.egg-info/requires.txt
+anduindata.egg-info/SOURCES.txt
+anduindata.egg-info/top_level.txt
+anduindata.egg-info/zip-safe
+dist/anduindata-1.0.1.tar.gz
+setup.py
+setup.py
