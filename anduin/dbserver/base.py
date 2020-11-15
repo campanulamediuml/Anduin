@@ -25,12 +25,12 @@ class Base(object):
             self.db = pymysql.connect(self._host, self._user, self._psw, self._dbname, charset='utf8',autocommit = True)
             self._load_tables()
             # print('数据库模块连接成功')
-            print('数据库模块连接成功')
+            print('connect success!')
             # IntervalTask(30, self.keep_connect)
         except Exception as e:
-            print(e)
-            print('数据库没有成功链接')
-            print('数据库模块连接成功',str(e))
+            # print(e)
+            print('connect fail',str(e))
+            # print('数据库模块连接成功',str(e))
             pass
 
 
@@ -260,7 +260,7 @@ class Base(object):
         try:
             self.db.ping(reconnect=True)
         except Exception as e:
-            print(sql,'数据库连接出错',str(e),'进行重连')
+            print(sql,'db error',str(e),'reconnecting...')
             self.connect()
         cursor = self.db.cursor()
         try:
@@ -273,7 +273,7 @@ class Base(object):
         except Exception as e:
             print('<--------DBERROR-------->')
             print(sql)
-            print('数据库查询出错',str(e))
+            print('execute fail!',str(e))
             print('<--------DBERROR-------->')
             results = None
 

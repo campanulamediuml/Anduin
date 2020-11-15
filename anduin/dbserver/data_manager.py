@@ -11,8 +11,9 @@ class data_manager(object):
     def __init__(self,db_config):
         self.t_data = db_config
         self.sql_pool = {}
+        print('creating DB connection pool...')
         self.new()
-        print('创建首批数据库链接实例')
+        # print('connect done!')
         IntervalTask(data_manager.keep_cycle,self.keep_connect)
     # def kill_hanged_connection(self):
     #     dead_sql = []
