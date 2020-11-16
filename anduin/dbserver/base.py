@@ -10,8 +10,8 @@ class Base(object):
         self._user = user
         self._psw = psw
         self._dbname = dbname
-        self._tables = {}
         self._is_busy = 0
+        self._tables = {}
         self.init_time = int(time.time())
         self.executing_query = ''
         self.last_execute_time = int(time.time())
@@ -22,17 +22,16 @@ class Base(object):
 
     def connect_db(self):
         try:
-            self.db = pymysql.connect(self._host, self._user, self._psw, self._dbname, charset='utf8',autocommit = True)
+            self.db = pymysql.connect(self._host, self._user, self._psw, self._dbname, charset='utf8', autocommit=True)
             self._load_tables()
             # print('数据库模块连接成功')
             print('connect success!')
             # IntervalTask(30, self.keep_connect)
         except Exception as e:
             # print(e)
-            print('connect fail',str(e))
+            print('connect fail', str(e))
             # print('数据库模块连接成功',str(e))
             pass
-
 
     def become_busy(self):
         self._is_busy = 1
@@ -49,7 +48,7 @@ class Base(object):
             return False
 
     def keep_connect(self):
-        if self.db == None:
+        if self.db is None:
             self.connect_db()
         # print(id(self),'进行连接')
         self.query('select 1')
@@ -61,7 +60,7 @@ class Base(object):
 
     def load_an_table(self, table):
         sql = 'show fields from ' + table
-        res = self.query(sql,show_sql=False)
+        res = self.query(sql, show_sql=False)
         column_list = list(map(lambda x: x[0], res))
         if 'signal' in column_list:
             column_list.remove('signal')
@@ -69,9 +68,9 @@ class Base(object):
         return column_list
 
     # 加载所有数据库表名
-    def _load_tables(self,show_sql=False):
+    def _load_tables(self, show_sql=False):
         sql = 'show tables'
-        res = self.query(sql,show_sql)
+        res = self.query(sql, show_sql)
         tables = tuple(map(lambda x: x[0], res))
         # print(tables)
         for table in tables:
@@ -80,7 +79,7 @@ class Base(object):
     def _load_all_fileds(self):
         pass
 
-    def create(self,table,colums,show_sql=False):
+    def create(self, table, colums, show_sql=False):
         sql = 'create table %s(' % table
 
         tail = ''
@@ -94,11 +93,11 @@ class Base(object):
 
         tail = tail[:-1] + ')'
         sql += tail
-        self.query(sql,show_sql)
+        self.query(sql, show_sql)
         self.db.commit()
         return
 
-    def find_info(self,table,conditions,or_cond,fields=None,group=None,order=None,limit=None):
+    def find_info(self, table, conditions, or_cond, fields=None, group=None, order=None, limit=None):
         if len(fields) == 1 and fields[0] == '*':
             if table in self._tables:
                 fields = self._tables[table]
@@ -106,7 +105,7 @@ class Base(object):
                 fields = self.load_an_table(table)
         sql = 'select %s from %s where  ' % (','.join(fields), table)
         # if conditions == []:
-        sql = Base.bind_conditions(sql,conditions,or_cond)
+        sql = Base.bind_conditions(sql, conditions, or_cond)
 
         if group is not None:
             sql += 'group by '
@@ -115,21 +114,21 @@ class Base(object):
             sql = sql[:-1]
 
         if order is not None:
-            sql += 'order by %s %s , id %s ' % (order[0], order[1],order[1])
+            sql += 'order by %s %s , id %s ' % (order[0], order[1], order[1])
 
         if limit is not None:
             sql += 'limit '
             for i in limit:
-                sql += '%s, ' %i
+                sql += '%s, ' % i
             sql = sql[:-2]
         return sql
 
     @staticmethod
-    def bind_conditions(sql,conditions,or_cond):
+    def bind_conditions(sql, conditions, or_cond):
         print(sql)
-        if conditions == None:
+        if conditions is None:
             conditions = []
-        if or_cond == None:
+        if or_cond is None:
             or_cond = []
 
         if len(conditions) > 0:
@@ -147,19 +146,18 @@ class Base(object):
                 value = unit[2]
                 if type("") == type(value):
                     value = "'%s'" % value
-                sql = sql + "binary %s %s %s " % (unit[0], unit[1], value)+' or '
+                sql = sql + "binary %s %s %s " % (unit[0], unit[1], value) + ' or '
             sql = sql[:-3]
 
         return sql
 
-
     # 查找数据（单条）
-    def find(self, table, conditions, or_cond,fields=('*',), order=None,show_sql=False):
-        sql = self.find_info(table,conditions,or_cond,fields,None,order)
+    def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False):
+        sql = self.find_info(table, conditions, or_cond, fields, None, order)
 
         sql += " limit 1"
         # 
-        res = self.query(sql,show_sql)
+        res = self.query(sql, show_sql)
         if res is None:
             return None
 
@@ -169,7 +167,7 @@ class Base(object):
         if table not in self._tables:
             self.load_an_table(table)
 
-        if  fields[0] == '*' and len(fields) == 1:
+        if fields[0] == '*' and len(fields) == 1:
             fieldList = self._tables[table]
 
         else:
@@ -178,13 +176,12 @@ class Base(object):
         # self.db.commit()
         return dict(zip(fieldList, res[0]))
 
-
     # 查找数据
-    def select(self, table, conditions, or_cond,fields=('*',), group=None,order=None,limit=None,show_sql=False):
-        sql = self.find_info(table,conditions,or_cond,fields,group,order,limit)
+    def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False):
+        sql = self.find_info(table, conditions, or_cond, fields, group, order, limit)
 
         # 
-        res = self.query(sql,show_sql)
+        res = self.query(sql, show_sql)
         if res is None:
             return None
 
@@ -207,24 +204,24 @@ class Base(object):
         # self.db.commit()
         return result
 
-    def insert(self, table, content, isCommit=True,show_sql=False):
+    def insert(self, table, content, isCommit=True, show_sql=False):
         params = content
         keys = str(tuple(params.keys()))
         keys = keys.replace("'", "")
         values = str(tuple(params.values()))
-        if (1 == len(params)):
+        if 1 == len(params):
             keys = keys[:-2] + ")"
             values = values[:-2] + ")"
 
         sql = 'insert into %s%s values %s ;' % (table, keys, values)
         #
-        self.query(sql,show_sql)
-        if True == isCommit:
+        self.query(sql, show_sql)
+        if isCommit is True:
             self.db.commit()
         return
 
-    def update(self, table, conditions, or_cond,params, isCommit=True,show_sql=False):
-        if params == {} or params == None:
+    def update(self, table, conditions, or_cond, params, isCommit=True, show_sql=False):
+        if params == {} or params is None:
             return
         sql = 'update %s set ' % table
         for param, value in params.items():
@@ -235,30 +232,30 @@ class Base(object):
         sql = sql[:-1]
         sql = Base.bind_conditions(sql, conditions, or_cond)
 
-        self.query(sql,show_sql)
-        if True == isCommit:
+        self.query(sql, show_sql)
+        if isCommit is True:
             self.db.commit()
         return
 
-    def delete(self, table, condition,or_cond, is_commit,show_sql=False):
+    def delete(self, table, condition, or_cond, is_commit, show_sql=False):
         sql = 'delete from %s where  ' % table
-        sql = Base.bind_conditions(sql,condition,or_cond)
-#  #
-        self.query(sql,show_sql)
+        sql = Base.bind_conditions(sql, condition, or_cond)
+        #  #
+        self.query(sql, show_sql)
         if is_commit is True:
             self.db.commit()
         return
 
-    def query(self, sql,show_sql=False):
+    def query(self, sql, show_sql=False):
         self.executing_query = sql
         if sql == 'select 1':
-            show_sql=False
-        if show_sql == True:
+            show_sql = False
+        if show_sql is True:
             print(sql)
         try:
             self.db.ping(reconnect=True)
         except Exception as e:
-            print(sql,'db error',str(e),'reconnecting...')
+            print(sql, 'db error', str(e), 'reconnecting...')
             self.connect()
         cursor = self.db.cursor()
         try:
@@ -271,7 +268,7 @@ class Base(object):
         except Exception as e:
             print('<--------DBERROR-------->')
             print(sql)
-            print('execute fail!',str(e))
+            print('execute fail!', str(e))
             print('<--------DBERROR-------->')
             results = None
 
@@ -301,7 +298,11 @@ class Base(object):
         results = cursor.fetchone()
         return results
 
-    def truncate(self, table,show_sql=False):
+    def truncate(self, table, show_sql=False):
         sql = 'TRUNCATE TABLE %s' % table
-        self.query(sql,show_sql)
+        self.query(sql, show_sql)
         return
+
+    @property
+    def tables(self):
+        return self._tables

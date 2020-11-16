@@ -1,5 +1,6 @@
 from .dbserver.data_manager import data_manager
 
+
 class Data(object):
     Base = None
 
@@ -16,11 +17,11 @@ class Data(object):
         sql_executing = {}
         for sql_id in sql_pool:
             sql = sql_pool[sql_id]
-            if sql.is_busy() == True:
+            if sql.is_busy() is True:
                 busy_list.append(sql_id)
                 sql_executing[sql_id] = sql.executing_query
 
-            if sql.is_busy() == False:
+            if sql.is_busy() is False:
                 free_list.append(sql_id)
             all_list.append(sql_id)
 
@@ -55,21 +56,21 @@ class Data(object):
         return data
 
     @staticmethod
-    def find(table, conditions, or_cond=None,fields=('*',), order=None, show_sql=False):
-        return Data.Base.find(table, conditions, or_cond,fields, order, show_sql)
+    def find(table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False):
+        return Data.Base.find(table, conditions, or_cond, fields, order, show_sql)
 
     @staticmethod
-    def select(table, conditions, or_cond=None,fields=('*',), group=None,order=None, limit=None,show_sql=False):
-        return Data.Base.select(table, conditions,or_cond, fields,group, order, limit,show_sql)
+    def select(table, conditions, or_cond=None, fields=('*',), group=None, order=None, limit=None, show_sql=False):
+        return Data.Base.select(table, conditions, or_cond, fields, group, order, limit, show_sql)
 
     @staticmethod
-    def update(table, conditions, or_cond=None,params=None, is_commit=True, show_sql=False):
-        Data.Base.update(table, conditions, params, or_cond,is_commit, show_sql)
+    def update(table, conditions, or_cond=None, params=None, is_commit=True, show_sql=False):
+        Data.Base.update(table, conditions, params, or_cond, is_commit, show_sql)
         return
 
     @staticmethod
-    def delete(table, conditions, or_cond=None,is_commit=True, show_sql=False):
-        data = Data.Base.delete(table, conditions, or_cond,is_commit, show_sql)
+    def delete(table, conditions, or_cond=None, is_commit=True, show_sql=False):
+        data = Data.Base.delete(table, conditions, or_cond, is_commit, show_sql)
         return data
 
     @staticmethod
@@ -81,10 +82,9 @@ class Data(object):
         return Data.Base.query(sql, show_sql)
 
 
-
-
 if __name__ == '__main__':
-    res = Data.select('withdraw_record',[('user_id','in',tuple(range(1,10)))],group=['user_id'],fields=['user_id','sum(share)'],show_sql=False)
+    res = Data.select('withdraw_record', [('user_id', 'in', tuple(range(1, 10)))], group=['user_id'],
+                      fields=['user_id', 'sum(share)'], show_sql=False)
     for i in res:
         print(i)
         print(i['sum(share)'])
