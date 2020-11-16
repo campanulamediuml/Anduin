@@ -1,16 +1,53 @@
-这是一个超轻型sql映射为键值对的框架，支持自动管理连接池和清理超时连接池
-与mysql保持心跳的周期为30秒
-连接池将会保持在10个作为稳定链接
-可以通过修改anduin.dbserver.data_manager.data_manager.min_keep_connection控制系统维持的连接池数量
+a lite mysql connector...
+Name from the Lord of Ring
 
-依赖pymysql
-通过from anduin.server import Data
+<=========how to use=========>
 
-Data.find
-Data.selet
-Data.update
-Data.insert
-Data.delete
-进行操作
+from anduin.server import Data
 
-Data.query可以直接执行sql语句
+cond = [
+    (col1,'=',val1),
+    (col2,'=',val2),
+    ....]
+
+fields = [
+    col1,
+    col2
+    ...]
+
+params = {
+    key1:val1,
+    key2:val2,
+    ...}
+
+find one line of data:
+
+    Data.find(__TableName__,conditions=cond,fields=fields)
+
+    return a python dict like { col1:value1,col2:value2...}
+
+find datas
+
+    Data.select(__TableName__,conditions=cond,fields=fields)
+
+    return a python list like [{ col1:value1,col2:value2...}]
+
+update data:
+
+    Data.update(__TableName__,conditions=cond,params=params)
+
+    return None
+
+insert data:
+
+    Data.insert(__TableName__,params=params)
+
+    return None
+
+delete data:
+
+    Data.delete(__TableName__,conditions=cond)
+
+    return None
+
+using Data.query() to execute sql directly like Data.query('select * from table')

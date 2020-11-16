@@ -98,7 +98,7 @@ class Base(object):
         self.db.commit()
         return
 
-    def find_info(self,table,conditions,fields=None,group=None,order=None,limit=None):
+    def find_info(self,table,conditions,or_cond,fields=None,group=None,order=None,limit=None):
         if len(fields) == 1 and fields[0] == '*':
             if table in self._tables:
                 fields = self._tables[table]
@@ -106,17 +106,7 @@ class Base(object):
                 fields = self.load_an_table(table)
         sql = 'select %s from %s where  ' % (','.join(fields), table)
         # if conditions == []:
-        for unit in conditions:
-            value = unit[2]
-            if type("") == type(value):
-                value = "'%s'" % value
-
-            sql = sql + "binary %s %s %s " % (unit[0], unit[1], value) + "  and "
-
-        if 0 < len(conditions):
-            sql = sql[0: -4]
-        else:
-            sql = sql[:-7]
+        sql = Base.bind_conditions(sql,conditions,or_cond)
 
         if group is not None:
             sql += 'group by '
@@ -134,9 +124,38 @@ class Base(object):
             sql = sql[:-2]
         return sql
 
+    @staticmethod
+    def bind_conditions(sql,conditions,or_cond):
+        print(sql)
+        if conditions == None:
+            conditions = []
+        if or_cond == None:
+            or_cond = []
+
+        if len(conditions) > 0:
+            for unit in conditions:
+                value = unit[2]
+                if type("") == type(value):
+                    value = "'%s'" % value
+                sql = sql + "binary %s %s %s " % (unit[0], unit[1], value) + "  and "
+            sql = sql[:-4]
+            if len(or_cond) > 0:
+                sql += ' or '
+
+        if len(or_cond) > 0:
+            for unit in or_cond:
+                value = unit[2]
+                if type("") == type(value):
+                    value = "'%s'" % value
+                sql = sql + "binary %s %s %s " % (unit[0], unit[1], value)+' or '
+            sql = sql[:-3]
+
+        return sql
+
+
     # 查找数据（单条）
-    def find(self, table, conditions, fields=('*',), order=None,show_sql=False):
-        sql = self.find_info(table,conditions,fields,None,order)
+    def find(self, table, conditions, or_cond,fields=('*',), order=None,show_sql=False):
+        sql = self.find_info(table,conditions,or_cond,fields,None,order)
 
         sql += " limit 1"
         # 
@@ -161,8 +180,8 @@ class Base(object):
 
 
     # 查找数据
-    def select(self, table, conditions, fields=('*',), group=None,order=None,limit=None,show_sql=False):
-        sql = self.find_info(table,conditions,fields,group,order,limit)
+    def select(self, table, conditions, or_cond,fields=('*',), group=None,order=None,limit=None,show_sql=False):
+        sql = self.find_info(table,conditions,or_cond,fields,group,order,limit)
 
         # 
         res = self.query(sql,show_sql)
@@ -204,7 +223,9 @@ class Base(object):
             self.db.commit()
         return
 
-    def update(self, table, conditions, params, isCommit=True,show_sql=False):
+    def update(self, table, conditions, or_cond,params, isCommit=True,show_sql=False):
+        if params == {} or params == None:
+            return
         sql = 'update %s set ' % table
         for param, value in params.items():
             if type("") == type(value):
@@ -212,40 +233,17 @@ class Base(object):
             sql = sql + " %s = %s," % (param, value)
 
         sql = sql[:-1]
-        if len(conditions) > 0:
-            sql += " where "
-
-        for unit in conditions:
-            value = unit[2]
-            if type("") == type(value):
-                value = "'%s'" % value
-
-            sql = sql + "binary %s %s %s " % (unit[0], unit[1], value) + " and "
-
-        if 0 < len(conditions):
-            sql = sql[0: -4]
-
+        sql = Base.bind_conditions(sql, conditions, or_cond)
 
         self.query(sql,show_sql)
         if True == isCommit:
             self.db.commit()
         return
 
-    def delete(self, table, condition, is_commit,show_sql=False):
-        sql = 'delete from %s where ' % table
-        for unit in condition:
-            value = unit[2]
-            if type("") == type(value):
-                value = "'%s'" % value
-
-            sql = sql + "binary %s %s %s " % (unit[0], unit[1], value) + " and "
-
-        if 0 < len(condition):
-            sql = sql[0: -4]
-        else:
-            sql = sql[:-7]
-# 
-        # 
+    def delete(self, table, condition,or_cond, is_commit,show_sql=False):
+        sql = 'delete from %s where  ' % table
+        sql = Base.bind_conditions(sql,condition,or_cond)
+#  #
         self.query(sql,show_sql)
         if is_commit is True:
             self.db.commit()

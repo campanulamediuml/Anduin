@@ -111,39 +111,39 @@ class data_manager(object):
         return result
 
 
-    def find(self,table, conditions,fields=('*',), order=None,show_sql=False):
+    def find(self,table, conditions,or_cond,fields=('*',), order=None,show_sql=False):
         sql = self.find_free_sql()
         # sql.become_busy()
         # print('执行这次sql请求的链接是', id(sql))
-        result = sql.find(table, conditions, fields, order,show_sql)
+        result = sql.find(table, conditions, or_cond,fields, order,show_sql)
         sql.become_free()
         return result
 
 
-    def select(self,table, conditions, fields=('*',), group=None,order=None,limit=None,show_sql=False):
+    def select(self,table, conditions, or_cond,fields=('*',), group=None,order=None,limit=None,show_sql=False):
 
         sql = self.find_free_sql()
         # sql.become_busy()
         # print('执行这次sql请求的链接是', id(sql))
-        result = sql.select(table, conditions, fields, group,order,limit,show_sql)
+        result = sql.select(table, conditions,or_cond, fields, group,order,limit,show_sql)
         sql.become_free()
         return result
 
 
-    def update(self,table, conditions, params, is_commit=True,show_sql=False):
+    def update(self,table, conditions,or_cond, params,is_commit=True,show_sql=False):
         sql = self.find_free_sql()
         # sql.become_busy()
         # print('执行这次sql请求的链接是', id(sql))
-        result = sql.update(table, conditions, params, is_commit,show_sql)
+        result = sql.update(table, conditions,or_cond, params, is_commit,show_sql)
         sql.become_free()
         return result
 
 
-    def delete(self,table, conditions, is_commit=True,show_sql=False):
+    def delete(self,table, conditions,or_cond, is_commit=True,show_sql=False):
         sql = self.find_free_sql()
         # sql.become_busy()
         # print('执行这次sql请求的链接是', id(sql))
-        result = sql.delete(table, conditions, is_commit,show_sql)
+        result = sql.delete(table, conditions, or_cond,is_commit,show_sql)
         sql.become_free()
         return result
 

@@ -55,21 +55,21 @@ class Data(object):
         return data
 
     @staticmethod
-    def find(table, conditions, fields=('*',), order=None, show_sql=False):
-        return Data.Base.find(table, conditions, fields, order, show_sql)
+    def find(table, conditions, or_cond=None,fields=('*',), order=None, show_sql=False):
+        return Data.Base.find(table, conditions, or_cond,fields, order, show_sql)
 
     @staticmethod
-    def select(table, conditions, fields=('*',), group=None,order=None, limit=None,show_sql=False):
-        return Data.Base.select(table, conditions, fields,group, order, limit,show_sql)
+    def select(table, conditions, or_cond=None,fields=('*',), group=None,order=None, limit=None,show_sql=False):
+        return Data.Base.select(table, conditions,or_cond, fields,group, order, limit,show_sql)
 
     @staticmethod
-    def update(table, conditions, params, is_commit=True, show_sql=False):
-        Data.Base.update(table, conditions, params, is_commit, show_sql)
+    def update(table, conditions, or_cond=None,params=None, is_commit=True, show_sql=False):
+        Data.Base.update(table, conditions, params, or_cond,is_commit, show_sql)
         return
 
     @staticmethod
-    def delete(table, conditions, is_commit=True, show_sql=False):
-        data = Data.Base.delete(table, conditions, is_commit, show_sql)
+    def delete(table, conditions, or_cond=None,is_commit=True, show_sql=False):
+        data = Data.Base.delete(table, conditions, or_cond,is_commit, show_sql)
         return data
 
     @staticmethod
