@@ -13,7 +13,7 @@ def IntervalTask(sec, func, params=(), immediatly=True, thread_name=''):
             func(*params)
             time.sleep(sec)
 
-    print(params)
+    # print(params)
     t = threading.Thread(target=run, args=params)
     if thread_name != '':
         t.name = thread_name

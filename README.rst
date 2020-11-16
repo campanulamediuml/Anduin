@@ -51,3 +51,4 @@ delete data:
     return None
 
 using Data.query() to execute sql directly like Data.query('select * from table')
+

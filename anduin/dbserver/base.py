@@ -125,11 +125,13 @@ class Base(object):
 
     @staticmethod
     def bind_conditions(sql, conditions, or_cond):
-        print(sql)
+        # print(sql)
         if conditions is None:
             conditions = []
         if or_cond is None:
             or_cond = []
+        if len(or_cond) + len(conditions) == 0:
+            return sql[:-7]
 
         if len(conditions) > 0:
             for unit in conditions:
