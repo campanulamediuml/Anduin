@@ -94,11 +94,11 @@ class data_manager(object):
         # self.sql_pool.append(sql)
         return sql
 
-    def create(self, table, colums, show_sql=False):
+    def create(self, table, colums, table_comment = '',show_sql=False):
         sql = self.find_free_sql()
         # sql.become_busy()
         print('执行这次sql请求的链接是', id(sql))
-        result = sql.create(table, colums, show_sql)
+        result = sql.create(table, colums, table_comment,show_sql)
         sql.become_free()
         return result
 
@@ -157,5 +157,13 @@ class data_manager(object):
         # sql.become_busy()
         print('执行这次sql请求的链接是', id(sql))
         result = sql.query(sql_query, show_sql)
+        sql.become_free()
+        return result
+
+    def truncate(self, table, show_sql=False):
+        sql = self.find_free_sql()
+        # sql.become_busy()
+        # print('执行这次sql请求的链接是', id(sql))
+        result = sql.truncate(table, show_sql)
         sql.become_free()
         return result

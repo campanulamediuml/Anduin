@@ -61,6 +61,8 @@ class Base(object):
     def load_an_table(self, table):
         sql = 'show fields from ' + table
         res = self.query(sql, show_sql=False)
+        if res is None:
+            return
         column_list = list(map(lambda x: x[0], res))
         if 'signal' in column_list:
             column_list.remove('signal')
@@ -79,7 +81,7 @@ class Base(object):
     def _load_all_fileds(self):
         pass
 
-    def create(self, table, colums, show_sql=False):
+    def create(self, table, colums, table_comment='',show_sql=False):
         sql = 'create table %s(' % table
 
         tail = ''
@@ -93,6 +95,7 @@ class Base(object):
 
         tail = tail[:-1] + ')'
         sql += tail
+        sql += 'engine=innodb,charset=utf8,comment="%s"'%table_comment
         self.query(sql, show_sql)
         self.db.commit()
         return
@@ -103,6 +106,8 @@ class Base(object):
                 fields = self._tables[table]
             else:
                 fields = self.load_an_table(table)
+        if fields is None:
+            return
         sql = 'select %s from %s where  ' % (','.join(fields), table)
         # if conditions == []:
         sql = Base.bind_conditions(sql, conditions, or_cond)
@@ -156,6 +161,8 @@ class Base(object):
     # 查找数据（单条）
     def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False):
         sql = self.find_info(table, conditions, or_cond, fields, None, order)
+        if sql is None:
+            return
 
         sql += " limit 1"
         # 
@@ -181,7 +188,8 @@ class Base(object):
     # 查找数据
     def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False):
         sql = self.find_info(table, conditions, or_cond, fields, group, order, limit)
-
+        if sql is None:
+            return
         # 
         res = self.query(sql, show_sql)
         if res is None:
@@ -231,7 +239,7 @@ class Base(object):
                 value = "'%s'" % value
             sql = sql + " %s = %s," % (param, value)
 
-        sql = sql[:-1]
+        sql = sql[:-1] + ' where  '
         sql = Base.bind_conditions(sql, conditions, or_cond)
 
         self.query(sql, show_sql)
@@ -303,6 +311,7 @@ class Base(object):
     def truncate(self, table, show_sql=False):
         sql = 'TRUNCATE TABLE %s' % table
         self.query(sql, show_sql)
+        self.db.commit()
         return
 
     @property

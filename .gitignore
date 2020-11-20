@@ -6,4 +6,5 @@ test_file.py
 anduindata.egg-info/*
 dist/*
 setup.py
+config/*
 
