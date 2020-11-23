@@ -148,26 +148,30 @@ class Data(object):
 
     @staticmethod
     def map_all_db(base_id='default',show_manager_id=False,file_path='',file_name='fb_frame.py'):
-        if show_manager_id is True:
-            print('本次任务通过', base_id, '执行')
-        if base_id not in Data.Base_pool:
-            print('base id not exist.. construct fail')
-            return
-        base_manager = Data.Base_pool[base_id]
-        db_name = base_manager.t_data['database']
-        all_table = Data.query('show tables',base_id=base_id)
-        table_index = {}
-        for i in all_table:
-            table_name = i[0]
-            table_info = Data.find('information_schema.tables',[('table_schema','=',db_name),('table_name','=',table_name)],fields=('table_name','table_comment'))
-            res = Data.query('show full columns from '+str(table_name),base_id=base_id)
-            table_index[table_name] = list(res)
-            table_index[table_name].append(table_info)
-        pprint(table_index)
+        try:
+            if show_manager_id is True:
+                print('本次任务通过', base_id, '执行')
+            if base_id not in Data.Base_pool:
+                print('base id not exist.. construct fail')
+                return
+            base_manager = Data.Base_pool[base_id]
+            db_name = base_manager.t_data['database']
+            all_table = Data.query('show tables',base_id=base_id)
+            table_index = {}
+            for i in all_table:
+                table_name = i[0]
+                table_info = Data.find('information_schema.tables',[('table_schema','=',db_name),('table_name','=',table_name)],fields=('table_name','table_comment'))
+                res = Data.query('show full columns from '+str(table_name),base_id=base_id)
+                table_index[table_name] = list(res)
+                table_index[table_name].append(table_info)
+            # pprint(table_index)
+            constructor = frame_constructor(db_name,table_index,file_path,file_name)
+            constructor.dump()
+            print('create file success in %s'%file_path+file_name)
+            return table_index
+        except Exception as e:
+            print(str(e))
 
-        constructor = frame_constructor(db_name,table_index,file_path,file_name)
-        constructor.dump()
-        return table_index
 
 
 

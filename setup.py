@@ -9,7 +9,7 @@ def read(fname):
 setup(
     # 以下为必需参数
     name='anduindata',  # 模块名
-    version='1.2.4',  # 当前版本
+    version='1.2.5',  # 当前版本
     description='a mysql connector',  # 简短描述
     py_modules=["anduindata"],  # 单文件模块写法
     # ckages=find_packages(exclude=['contrib', 'docs', 'tests']),  # 多文件模块写法
