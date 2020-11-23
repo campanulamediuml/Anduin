@@ -11,12 +11,14 @@ class frame_constructor(object):
         self.file_path = file_path
         self.file_name = file_name
         self.fh = open(self.file_path+self.file_name,'w')
+        self.func_name_list = []
 
 
     def dump(self):
         self.add_file_title()
         for table_name,table_frame in self.table_struct.items():
             self.construct_table(table_name,table_frame)
+        self.write_main_run()
 
         self.fh.close()
 
@@ -27,6 +29,7 @@ class frame_constructor(object):
 
     def construct_table(self,table_name,table_frame):
         self.construct_func_def(table_name)
+        self.func_name_list.append(table_name)
         self.changeline()
         self.indent()
         self.write_drop_table(table_name)
@@ -38,6 +41,9 @@ class frame_constructor(object):
         self.indent()
         self.add_return()
         self.changeline(2)
+
+
+
     def construct_func_def(self,func_name):
         self.fh.write(_func_define + func_name + '():')
 
@@ -90,6 +96,15 @@ class frame_constructor(object):
     def write_create_table(self,table_frame):
         self.indent()
         self.fh.write('Data.create(table_name, column, comment="%s")'%table_frame[-1]['table_comment'])
+
+    def write_main_run(self):
+        self.construct_func_def('create_all_table')
+        self.changeline()
+        for func_name in self.func_name_list:
+            self.indent()
+            self.fh.write(func_name+'()')
+            self.changeline()
+        pass
 
 
 

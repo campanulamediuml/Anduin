@@ -8,3 +8,5 @@ dist/*
 setup.py
 config/*
 
+db_frame.py
+default

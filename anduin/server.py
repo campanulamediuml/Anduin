@@ -147,7 +147,7 @@ class Data(object):
         return Data.Base_pool[base_id].query(sql, show_sql) if base_id in Data.Base_pool else None
 
     @staticmethod
-    def map_all_db(base_id='default',show_manager_id=False,file_path='',file_name='fb_frame.py'):
+    def map_all_db(base_id='default',show_manager_id=False,file_path='',file_name='db_frame.py'):
         try:
             if show_manager_id is True:
                 print('本次任务通过', base_id, '执行')
