@@ -11,3 +11,4 @@ config/*
 db_frame.py
 default
 .vscode/settings.json
+.vscode/launch.json
