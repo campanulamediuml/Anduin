@@ -10,3 +10,4 @@ config/*
 
 db_frame.py
 default
+.vscode/settings.json
