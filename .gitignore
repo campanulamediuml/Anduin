@@ -7,8 +7,11 @@ anduindata.egg-info/*
 dist/*
 setup.py
 config/*
+upload.py
 
 db_frame.py
 default
-.vscode/settings.json
-.vscode/launch.json
+.vscode/*
+
+setup.py
+setup.py

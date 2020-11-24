@@ -143,14 +143,6 @@ class data_manager(object):
         sql.become_free()
         return result
 
-    def find_last(self, table, conditions, info, limit, fields="*", show_sql=False):
-        sql = self.find_free_sql()
-        # sql.become_busy()
-        # print('执行这次sql请求的链接是', id(sql))
-        result = sql.find_last(table, conditions, info, limit, fields, show_sql)
-        sql.become_free()
-        return result
-
     def query(self, sql_query, show_sql=False):
         # print(sql)
         sql = self.find_free_sql()

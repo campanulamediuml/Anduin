@@ -125,13 +125,6 @@ class Data(object):
         return data
 
     @staticmethod
-    def find_last(table, conditions, info, limit, fields="*", show_sql=False,base_id='default',show_manager_id=False):
-        if show_manager_id is True:
-            print('本次任务通过',base_id,'执行')
-
-        return Data.Base_pool[base_id].find_last(table, conditions, info, limit, fields, show_sql) if base_id in Data.Base_pool else None
-
-    @staticmethod
     def truncate(table, show_sql=False, base_id='default', show_manager_id=False):
         if show_manager_id is True:
             print('本次任务通过', base_id, '执行')
