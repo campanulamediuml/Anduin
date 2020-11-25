@@ -13,5 +13,4 @@ db_frame.py
 default
 .vscode/*
 
-setup.py
-setup.py
+py38install.sh
