@@ -1,4 +1,4 @@
 from .server import Data as db
 
-class Stream(db):
+class Ring(db):
     pass

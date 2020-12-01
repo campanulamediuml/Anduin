@@ -23,7 +23,7 @@ class frame_constructor(object):
         self.fh.close()
 
     def add_file_title(self):
-        self.write_comment('db-name = '+self.db_name,indent = 0)
+        self.write_comment(' db-name = '+self.db_name,indent = 0)
         self.changeline()
         self.fh.write('from anduin.server import Data')
         self.changeline()
