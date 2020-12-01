@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from .construct_file import frame_constructor
 from .dbserver.data_manager import data_manager
 db_config = None
@@ -83,7 +81,6 @@ class Data(object):
     def create(table, colums, comment='',show_sql=False,base_id='default',show_manager_id=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-
         return Data.Base_pool[base_id].create(table, colums, comment,show_sql) if base_id in Data.Base_pool else None
 
     @staticmethod
@@ -105,14 +102,22 @@ class Data(object):
     def select(table, conditions, or_cond=None, fields=('*',), group=None, order=None, limit=None, show_sql=False,base_id='default',show_manager_id=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-
         return Data.Base_pool[base_id].select(table, conditions, or_cond, fields, group, order, limit, show_sql) if base_id in Data.Base_pool else None
+
+
+    @staticmethod
+    def find_last(table, conditions, info='id', limit=1, fields=("*",), show_sql=False):
+        res = Data.select(table, conditions, fields=fields, limit=[limit], order = (info,'desc'),show_sql=show_sql)
+        if res == None:
+            return
+        else:
+            return res[0]
+    # 这个函数不应该使用
 
     @staticmethod
     def update(table, conditions, or_cond=None, params=None, is_commit=True, show_sql=False,base_id='default',show_manager_id=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-
         Data.Base_pool[base_id].update(table, conditions, params, or_cond, is_commit, show_sql) if base_id in Data.Base_pool else None
         return
 
@@ -120,7 +125,6 @@ class Data(object):
     def delete(table, conditions, or_cond=None, is_commit=True, show_sql=False,base_id='default',show_manager_id=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-
         data = Data.Base_pool[base_id].delete(table, conditions, or_cond, is_commit, show_sql) if base_id in Data.Base_pool else None
         return data
 
@@ -135,9 +139,17 @@ class Data(object):
     def query(sql, show_sql=False,base_id='default',show_manager_id=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-        if base_id not in Data.Base_pool:
-            return
         return Data.Base_pool[base_id].query(sql, show_sql) if base_id in Data.Base_pool else None
+
+    @staticmethod
+    def get_cache(table,safe=True):
+        if safe:
+            pass
+        res = {}
+        all_data = Data.select(table,[])
+        for i in all_data:
+            res[i['id']] = 1
+        return res
 
     @staticmethod
     def map_all_db(base_id='default',show_manager_id=False,file_path='',file_name='db_frame.py'):

@@ -23,6 +23,8 @@ class frame_constructor(object):
         self.fh.close()
 
     def add_file_title(self):
+        self.write_comment('db-name = '+self.db_name,indent = 0)
+        self.changeline()
         self.fh.write('from anduin.server import Data')
         self.changeline()
         self.changeline()
@@ -56,14 +58,14 @@ class frame_constructor(object):
     def changeline(self,change_mult = 1):
         self.fh.write(_change_line*change_mult)
 
-    def write_comment(self,content):
+    def write_comment(self,content,indent = 2):
         if content != None:
             for i in content.split('\n'):
-                self.indent(2)
+                self.indent(indent)
                 self.fh.write('#'+i)
 
     def write_drop_table(self,table_name):
-        self.fh.write('table_name = "%s.%s"'%(self.db_name, table_name))
+        self.fh.write('table_name = "%s"'%(table_name))
         self.changeline()
         self.indent()
         self.fh.write('Data.query("drop table %s"%table_name)')
@@ -78,7 +80,10 @@ class frame_constructor(object):
             self.indent(2)
             self.fh.write('(')
             # for word in line:
-            self.fh.write('"%s", "%s", '%(line[0],line[1]))
+            if 'PRI' in line:
+                self.fh.write('"%s", "int", '%(line[0]))
+            else:
+                self.fh.write('"%s", "%s", ' % (line[0], line[1]))
             if line[5] != None:
                 self.fh.write('"default \'%s\'", '%line[5])
             if 'PRI' in line:

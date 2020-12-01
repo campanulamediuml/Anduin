@@ -1,15 +1,28 @@
-import pymysql
 import time
+import pymysql
+import sqlite3
 
+mysql = 'mysql'
+sqlite = 'sqlite'
+
+ENGINE_DICT = {
+    'mysql':pymysql,
+    'sqlite':sqlite3
+}
 
 class Base(object):
 
-    def __init__(self, host, user, psw, dbname):
+    def __init__(self, host, user, psw, dbname,engine):
         self.id = id(self)
         self._host = host
         self._user = user
         self._psw = psw
         self._dbname = dbname
+        self._engine = engine
+        self.db_engine = None
+        if self._engine in ENGINE_DICT:
+            self.db_engine = ENGINE_DICT[self._engine]
+        # 选择数据库引擎
         self._is_busy = 0
         self._tables = {}
         self.init_time = int(time.time())
@@ -22,8 +35,9 @@ class Base(object):
 
     def connect_db(self):
         try:
-            self.db = pymysql.connect(self._host, self._user, self._psw, self._dbname, charset='utf8', autocommit=True)
-            self._load_tables()
+            self.db = self.connect()
+            if self._engine != sqlite:
+                self._load_tables()
             # print('数据库模块连接成功')
             print('connect success!')
             # IntervalTask(30, self.keep_connect)
@@ -32,6 +46,15 @@ class Base(object):
             print('connect fail', str(e))
             # print('数据库模块连接成功',str(e))
             pass
+
+    def connect(self):
+        if self._engine == mysql:
+            self.db = self.db_engine.connect(self._host, self._user, self._psw, self._dbname, charset='utf8')
+            return self.db
+        if self._engine == sqlite:
+            self.db = self.db_engine.connect(self._dbname)
+            return self.db
+
 
     def become_busy(self):
         self._is_busy = 1
@@ -50,23 +73,28 @@ class Base(object):
     def keep_connect(self):
         if self.db is None:
             self.connect_db()
-        # print(id(self),'进行连接')
-        self.query('select 1')
-        # print('select')
-        # print('数据库心跳')
+        if self._engine != sqlite:
+            self.query('select 1')
 
-    def connect(self):
-        self.db = pymysql.connect(self._host, self._user, self._psw, self._dbname, charset='utf8')
+
 
     def load_an_table(self, table):
-        sql = 'show fields from ' + table
-        res = self.query(sql, show_sql=False)
-        if res is None:
-            return
-        column_list = list(map(lambda x: x[0], res))
-        if 'signal' in column_list:
-            column_list.remove('signal')
-        self._tables[table] = column_list
+        if self._engine == sqlite:
+            sql = 'PRAGMA table_info(%s)'%table
+            res = self.query(sql, show_sql=False)
+            if res is None:
+                return
+            column_list = list(map(lambda x: x[1], res))
+            self._tables[table] = column_list
+        else:
+            sql = 'show fields from ' + table
+            res = self.query(sql, show_sql=False)
+            if res is None:
+                return
+            column_list = list(map(lambda x: x[0], res))
+            if 'signal' in column_list:
+                column_list.remove('signal')
+            self._tables[table] = column_list
         return column_list
 
     # 加载所有数据库表名
@@ -85,8 +113,11 @@ class Base(object):
         sql = 'create table %s(' % table
 
         tail = ''
+
         for item in colums:
             col = ''
+            if self._engine == sqlite:
+                item= item[:-1]
             for i in item:
                 col += str(i)
                 col += ' '
@@ -95,7 +126,11 @@ class Base(object):
 
         tail = tail[:-1] + ')'
         sql += tail
-        sql += 'engine=innodb,charset=utf8,comment="%s"'%table_comment
+        # sql += 'charset=utf8mb4'
+        if self._engine == mysql:
+            sql += 'charset=utf8mb4,engine=innodb,comment="%s"'%(table_comment)
+        if self._engine == sqlite:
+            sql = sql.replace('int AUTO_INCREMENT primary key','INTEGER PRIMARY KEY AUTOINCREMENT')
         self.query(sql, show_sql)
         self.db.commit()
         return
@@ -118,7 +153,7 @@ class Base(object):
                 sql += '%s ,' % i
             sql = sql[:-1]
 
-        if order is not None:
+        if order is not None and order[0] != 'id':
             sql += 'order by %s %s , id %s ' % (order[0], order[1], order[1])
 
         if limit is not None:
@@ -257,16 +292,19 @@ class Base(object):
         return
 
     def query(self, sql, show_sql=False):
+        if self._engine == sqlite:
+            sql = sql.replace('binary','')
         self.executing_query = sql
         if sql == 'select 1':
             show_sql = False
         if show_sql is True:
             print(sql)
-        try:
-            self.db.ping(reconnect=True)
-        except Exception as e:
-            print(sql, 'db error', str(e), 'reconnecting...')
-            self.connect()
+        if self._engine != sqlite:
+            try:
+                self.db.ping(reconnect=True)
+            except Exception as e:
+                print(sql, 'db error', str(e), 'reconnecting...')
+                self.connect()
         cursor = self.db.cursor()
         try:
             # res = time.time()
@@ -284,6 +322,7 @@ class Base(object):
 
         self.update_last_connect_time()
         self.executing_query = ''
+        # print(results)
         # print(sql,'执行时间',time.time()-res)
         return results
         # results = cursor.fetchall()
@@ -300,7 +339,12 @@ class Base(object):
         return self.last_connect_time
 
     def query_one(self, sql):
-        self.db.ping(reconnect=True)
+        if self._engine != sqlite:
+            try:
+                self.db.ping(reconnect=True)
+            except Exception as e:
+                print(sql, 'db error', str(e), 'reconnecting...')
+                self.connect()
         # cur.execute(sql)
         # db.commit()
         cursor = self.db.cursor()

@@ -1,6 +1,6 @@
 import time
 from ..Scheduler import IntervalTask
-from ..dbserver.base import Base
+from ..dbserver.base import Base, ENGINE_DICT, mysql
 
 
 # from config.config import db_config
@@ -14,19 +14,20 @@ def dump_table(table, sql):
     sql.become_free()
     return result
 
-
 class data_manager(object):
     min_keep_connection = 10
     keep_cycle = 10
 
     def __init__(self, db_config):
         self.t_data = db_config
+        if 'engine' not in self.t_data or self.t_data['engine'] not in ENGINE_DICT:
+            self.t_data['engine'] = mysql
+
         self.sql_pool = {}
         print('creating DB connection pool...')
         self.new()
         # print('connect done!')
         IntervalTask(data_manager.keep_cycle, self.keep_connect)
-
     # def kill_hanged_connection(self):
     #     dead_sql = []
     #
@@ -89,7 +90,7 @@ class data_manager(object):
         return
 
     def create_new_sql(self, ):
-        sql = Base(self.t_data['host'], self.t_data['user'], self.t_data['password'], self.t_data['database'])
+        sql = Base(self.t_data['host'], self.t_data['user'], self.t_data['password'], self.t_data['database'],self.t_data['engine'])
         # sql.become_busy()
         # self.sql_pool.append(sql)
         return sql

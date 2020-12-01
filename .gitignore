@@ -14,3 +14,6 @@ default
 .vscode/*
 
 py38install.sh
+anduin.egg-info
+anduin.egg-info/*
+*.db

@@ -3,7 +3,7 @@ Name from the Lord of Ring
 
 <=========how to use=========>
 
-from anduin.server import Data
+from anduin.river import Stream
 
 cond = [
     (col1,'=',val1),
@@ -22,33 +22,33 @@ params = {
 
 find one line of data:
 
-    Data.find(__TableName__,conditions=cond,fields=fields)
+    Stream.find(__TableName__,conditions=cond,fields=fields)
 
     return a python dict like { col1:value1,col2:value2...}
 
 find datas
 
-    Data.select(__TableName__,conditions=cond,fields=fields)
+    Stream.select(__TableName__,conditions=cond,fields=fields)
 
     return a python list like [{ col1:value1,col2:value2...}]
 
 update data:
 
-    Data.update(__TableName__,conditions=cond,params=params)
+    Stream.update(__TableName__,conditions=cond,params=params)
 
     return None
 
 insert data:
 
-    Data.insert(__TableName__,params=params)
+    Stream.insert(__TableName__,params=params)
 
     return None
 
 delete data:
 
-    Data.delete(__TableName__,conditions=cond)
+    Stream.delete(__TableName__,conditions=cond)
 
     return None
 
-using Data.query() to execute sql directly like Data.query('select * from table')
+using Stream.query() to execute sql directly like Stream.query('select * from table')
 
