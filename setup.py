@@ -9,8 +9,8 @@ def read(fname):
 setup(
     # 以下为必需参数
     name='anduin',  # 模块名
-    version='1.4.8',  # 当前版本
-    description='a mysql connector',  # 简短描述
+    version='1.4.9',  # 当前版本
+    description='a lite mysql & sqlite3 connect engine...',  # 简短描述
     py_modules=["anduin"],  # 单文件模块写法
     # ckages=find_packages(exclude=['contrib', 'docs', 'tests']),  # 多文件模块写法
     license='MIT',
@@ -18,7 +18,7 @@ setup(
     author='campanula',
     author_email='421248329@qq.com',
     platforms='any',
-    keywords="mysql",
+    keywords="mysql , sqlite3 , sql engine",
     # packages = find_packages('anduin'),
     # package_dir = {'anduin':'*'},
     classifiers=[
