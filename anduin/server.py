@@ -84,25 +84,25 @@ class Data(object):
         return Data.Base_pool[base_id].create(table, colums, comment,show_sql) if base_id in Data.Base_pool else None
 
     @staticmethod
-    def insert(table, params, is_commit=True, show_sql=False,base_id='default',show_manager_id=False):
+    def insert(table, params,show_sql=False,base_id='default',show_manager_id=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
 
-        data = Data.Base_pool[base_id].insert(table, params, is_commit, show_sql) if base_id in Data.Base_pool else None
+        data = Data.Base_pool[base_id].insert(table, params, show_sql) if base_id in Data.Base_pool else None
         return data
 
     @staticmethod
-    def find(table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False,base_id='default',show_manager_id=False):
+    def find(table, conditions, fields=('*',), or_cond=None, order=None, show_sql=False,base_id='default',show_manager_id=False,from_cache=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
 
-        return Data.Base_pool[base_id].find(table, conditions, or_cond, fields, order, show_sql) if base_id in Data.Base_pool else None
+        return Data.Base_pool[base_id].find(table, conditions, or_cond, fields, order, show_sql,from_cache) if base_id in Data.Base_pool else None
 
     @staticmethod
-    def select(table, conditions, or_cond=None, fields=('*',), group=None, order=None, limit=None, show_sql=False,base_id='default',show_manager_id=False):
+    def select(table, conditions, fields=('*',),or_cond=None, group=None, order=None, limit=None, show_sql=False,base_id='default',show_manager_id=False,from_cache=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-        return Data.Base_pool[base_id].select(table, conditions, or_cond, fields, group, order, limit, show_sql) if base_id in Data.Base_pool else None
+        return Data.Base_pool[base_id].select(table, conditions, or_cond, fields, group, order, limit, show_sql,from_cache) if base_id in Data.Base_pool else None
 
 
     @staticmethod
@@ -115,17 +115,18 @@ class Data(object):
     # 这个函数不应该使用
 
     @staticmethod
-    def update(table, conditions, or_cond=None, params=None, is_commit=True, show_sql=False,base_id='default',show_manager_id=False):
+    def update(table, conditions, params=None, or_cond=None,show_sql=False,base_id='default',show_manager_id=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-        Data.Base_pool[base_id].update(table, conditions, params, or_cond, is_commit, show_sql) if base_id in Data.Base_pool else None
+        # print(params)
+        Data.Base_pool[base_id].update(table, conditions,or_cond, params,show_sql) if base_id in Data.Base_pool else None
         return
 
     @staticmethod
-    def delete(table, conditions, or_cond=None, is_commit=True, show_sql=False,base_id='default',show_manager_id=False):
+    def delete(table, conditions, or_cond=None, show_sql=False,base_id='default',show_manager_id=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-        data = Data.Base_pool[base_id].delete(table, conditions, or_cond, is_commit, show_sql) if base_id in Data.Base_pool else None
+        data = Data.Base_pool[base_id].delete(table, conditions, or_cond, show_sql) if base_id in Data.Base_pool else None
         return data
 
     @staticmethod
@@ -148,7 +149,7 @@ class Data(object):
         res = {}
         all_data = Data.select(table,[])
         for i in all_data:
-            res[i['id']] = 1
+            res[i['id']] = i
         return res
 
     @staticmethod

@@ -28,9 +28,17 @@ class data_manager(object):
         self.new()
         # print('connect done!')
         IntervalTask(data_manager.keep_cycle, self.keep_connect)
+
+        self.mem_cache = {}
     # def kill_hanged_connection(self):
     #     dead_sql = []
     #
+    def get_table_name(self,table_name):
+        if '.' in table_name:
+            return table_name
+        else:
+            return self.t_data['database']+'.'+table_name
+
     def keep_connect(self):
         can_update_sql = []
         for sql in self.sql_pool.values():
@@ -65,6 +73,18 @@ class data_manager(object):
                     count += 1
         # print('计划清理',len(kill_connect),'个空闲连接，实际清理',count,'个')
         return
+
+    def get_table_data(self,table,query):
+        try:
+            return self.mem_cache[table][query]
+        except:
+            return None
+
+    def clean_table(self,table):
+        try:
+            return self.mem_cache.pop(table) if table in self.mem_cache else None
+        except:
+            return None
 
     def find_free_sql(self):
         for sql in self.sql_pool.values():
@@ -103,44 +123,76 @@ class data_manager(object):
         sql.become_free()
         return result
 
-    def insert(self, table, params, is_commit=True, show_sql=False):
+    def insert(self, table, params, show_sql=False):
         sql = self.find_free_sql()
+        table = self.get_table_name(table)
         # sql.become_busy()
         # print('执行这次sql请求的链接是', id(sql))
-        result = sql.insert(table, params, is_commit, show_sql)
+        result = sql.insert(table, params, show_sql)
         sql.become_free()
+        self.clean_table(table)
         return result
 
-    def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False):
+    def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False,from_cache = False):
         sql = self.find_free_sql()
+        table = self.get_table_name(table)
         # sql.become_busy()
         # print('执行这次sql请求的链接是', id(sql))
+        if from_cache == True:
+            query = sql.find_info(table, conditions, or_cond, fields, None, order, 1)
+            res = self.get_table_data(table,query)
+            if res is not None:
+                sql.become_free()
+                return res
+
         result = sql.find(table, conditions, or_cond, fields, order, show_sql)
+        if result is None:
+            return
+        self.mem_cache[table] = {
+            result['query']: result['result']
+        }
         sql.become_free()
-        return result
+        return result['result']
 
-    def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False):
-
+    def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False,from_cache=False):
         sql = self.find_free_sql()
+        table = self.get_table_name(table)
         # sql.become_busy()
         # print('执行这次sql请求的链接是', id(sql))
+        if from_cache == True:
+            query = sql.find_info(table, conditions, or_cond, fields, group, order, limit)
+            res = self.get_table_data(table, query)
+            if res is not None:
+                sql.become_free()
+                return res
+
         result = sql.select(table, conditions, or_cond, fields, group, order, limit, show_sql)
+        if result is None:
+            return
+        self.mem_cache[table] = {
+            result['query']:result['result']
+        }
+        sql.become_free()
+        return result['result']
+
+    def update(self, table, conditions,or_cond, params, show_sql=False):
+        sql = self.find_free_sql()
+        table = self.get_table_name(table)
+        # sql.become_busy()
+        # print('执行这次sql请求的链接是', id(sql))
+        # print('这次更新的params是',params)
+        result = sql.update(table, conditions, or_cond, params, show_sql)
+        self.clean_table(table)
         sql.become_free()
         return result
 
-    def update(self, table, conditions, or_cond, params, is_commit=True, show_sql=False):
+    def delete(self, table, conditions, or_cond, show_sql=False):
         sql = self.find_free_sql()
+        table = self.get_table_name(table)
         # sql.become_busy()
         # print('执行这次sql请求的链接是', id(sql))
-        result = sql.update(table, conditions, or_cond, params, is_commit, show_sql)
-        sql.become_free()
-        return result
-
-    def delete(self, table, conditions, or_cond, is_commit=True, show_sql=False):
-        sql = self.find_free_sql()
-        # sql.become_busy()
-        # print('执行这次sql请求的链接是', id(sql))
-        result = sql.delete(table, conditions, or_cond, is_commit, show_sql)
+        result = sql.delete(table, conditions, or_cond,  show_sql)
+        self.clean_table(table)
         sql.become_free()
         return result
 
@@ -149,7 +201,7 @@ class data_manager(object):
         sql = self.find_free_sql()
         # sql.become_busy()
         print('执行这次sql请求的链接是', id(sql))
-        result = sql.query(sql_query, show_sql)
+        result = sql.query_one(sql_query, show_sql)
         sql.become_free()
         return result
 
