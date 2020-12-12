@@ -139,7 +139,8 @@ class data_manager(object):
         # sql.become_busy()
         # print('执行这次sql请求的链接是', id(sql))
         if from_cache == True:
-            query = sql.find_info(table, conditions, or_cond, fields, None, order, 1)
+            query = sql.find_info(table, conditions, or_cond, fields, None, order, None)
+            query += " limit 1"
             res = self.get_table_data(table,query)
             if res is not None:
                 sql.become_free()

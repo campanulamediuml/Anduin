@@ -148,7 +148,7 @@ class Base(object):
                 sql += '%s ,' % i
             sql = sql[:-1]
 
-        if order is not None and order[0] != 'id':
+        if order is not None:
             sql += 'order by %s %s , id %s ' % (order[0], order[1], order[1])
 
         if limit is not None:
@@ -200,7 +200,7 @@ class Base(object):
 
     # 查找数据（单条）
     def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False):
-        sql = self.find_info(table, conditions, or_cond, fields, None, order,1)
+        sql = self.find_info(table, conditions, or_cond, fields, None, order, None)
         if sql is None:
             return
 
