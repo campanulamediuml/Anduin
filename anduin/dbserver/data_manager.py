@@ -42,26 +42,17 @@ class data_manager(object):
     def keep_connect(self):
         can_update_sql = []
         for sql in self.sql_pool.values():
-            if int(time.time()) - sql.get_last_connect_time() > 30:
-                can_update_sql.append(sql)
-
-        count = 0
-        kill_connect = []
-        for sql in can_update_sql:
-            if count > data_manager.min_keep_connection:
-                kill_connect.append(id(sql))
-                continue
-            if sql.is_busy() is False:
-                sql.become_busy()
-                sql.keep_connect()
-                # print(sql.id,'进行心跳')
+            if int(time.time()) - sql.last_execute_time > 30:
+                print(id(sql),'超时了')
                 sql.become_free()
-                count += 1
-            # if count > data_manager.min_keep_connection:
-            #
-            #     break
-        self.kill_unused_connection(kill_connect)
-
+                can_update_sql.append(sql)
+        # count = 0
+        # kill_connect = []
+        # for sql in can_update_sql:
+        #     if sql.is_busy() == False:
+        #         kill_connect.append(id(sql))
+        #         count += 1
+        self.kill_unused_connection(can_update_sql)
         return
 
     def kill_unused_connection(self, kill_connect):
@@ -71,7 +62,7 @@ class data_manager(object):
                 if self.sql_pool[sql_id].is_busy() is False:
                     self.sql_pool.pop(sql_id)
                     count += 1
-        # print('计划清理',len(kill_connect),'个空闲连接，实际清理',count,'个')
+        print('计划清理',len(kill_connect),'个空闲连接，实际清理',count,'个')
         return
 
     def get_table_data(self,table,query):
@@ -91,12 +82,12 @@ class data_manager(object):
             if sql.is_busy() is False:
                 sql.become_busy()
                 return sql
-        # print('数据库连接池全忙状态，创建新的数据库链接')
+        print('数据库连接池全忙状态，创建新的数据库链接')
         sql = self.create_new_sql()
         sql.become_busy()
         self.add_new_sql(sql)
-        # print('创建完毕')
-        # dbg_db('数据库连接池全忙状态，创建新的数据库链接', '新连接id:', id(sql))
+        print('创建完毕')
+        print('数据库连接池全忙状态，创建新的数据库链接', '新连接id:', id(sql))
         return sql
 
     def add_new_sql(self, sql):

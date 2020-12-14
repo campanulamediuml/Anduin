@@ -62,6 +62,7 @@ class Base(object):
 
     def become_free(self):
         self._is_busy = 0
+        self.executing_query = ''
         return
 
     def is_busy(self):
@@ -173,7 +174,7 @@ class Base(object):
                 value = unit[2]
                 if type("") == type(value):
                     value = "'%s'" % value
-                if 'id' not in unit[0]:
+                if 'username' in unit[0]:
                     sql = sql + "binary %s %s %s " % (unit[0], unit[1], value) + "  and "
                 else:
                     sql = sql + " %s %s %s " % (unit[0], unit[1], value) + "  and "
@@ -186,7 +187,7 @@ class Base(object):
                 value = unit[2]
                 if type("") == type(value):
                     value = "'%s'" % value
-                if 'id' not in unit[0]:
+                if 'username' in unit[0]:
                     sql = sql + "binary %s %s %s " % (unit[0], unit[1], value) + ' or '
                 else:
                     sql = sql + " %s %s %s " % (unit[0], unit[1], value) + ' or '
@@ -320,8 +321,13 @@ class Base(object):
         cursor = self.db.cursor()
         try:
             # res = time.time()
+            self.update_last_execute_time()
             cursor.execute(sql)
             results = cursor.fetchall()
+            if sql != 'select 1':
+                self.update_last_connect_time()
+            if self._engine == sqlite:
+                self.db.commit()
         except Exception as e:
             print('<--------DBERROR-------->')
             print(sql)
@@ -329,17 +335,19 @@ class Base(object):
             print('<--------DBERROR-------->')
             results = None
 
-        self.update_last_connect_time()
-        self.executing_query = ''
-        if self._engine == sqlite:
-            self.db.commit()
+        # self.update_last_connect_time()
+        # self.executing_query = ''
+        # if self._engine == sqlite:
+        #     self.db.commit()
         # print(results)
         # print(sql,'执行时间',time.time()-res)
+        # self.executing_query = ''
         return results
         # results = cursor.fetchall()
 
     def update_last_connect_time(self):
         self.last_connect_time = int(time.time())
+        # print(id(self),'执行',self.executing_query,'更新时间')
         return
 
     def update_last_execute_time(self):

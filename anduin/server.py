@@ -47,7 +47,8 @@ class Data(object):
             sql = sql_pool[sql_id]
             if sql.is_busy() is True:
                 busy_list.append(sql_id)
-                sql_executing[sql_id] = sql.executing_query
+                sql_executing[sql_id] = [sql.executing_query,sql.last_execute_time]
+
 
             if sql.is_busy() is False:
                 free_list.append(sql_id)
