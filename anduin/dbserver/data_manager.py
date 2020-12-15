@@ -43,26 +43,24 @@ class data_manager(object):
         can_update_sql = []
         for sql in self.sql_pool.values():
             if int(time.time()) - sql.last_execute_time > 30:
-                print(id(sql),'超时了')
-                sql.become_free()
                 can_update_sql.append(sql)
-        # count = 0
-        # kill_connect = []
-        # for sql in can_update_sql:
-        #     if sql.is_busy() == False:
-        #         kill_connect.append(id(sql))
-        #         count += 1
-        self.kill_unused_connection(can_update_sql)
+        if len(can_update_sql) == 1:
+            sql = can_update_sql[0]
+            sql.become_busy()
+            sql.keep_connect()
+            sql.become_free()
+        else:
+            self.kill_unused_connection(can_update_sql)
         return
 
     def kill_unused_connection(self, kill_connect):
         count = 0
         for sql_id in kill_connect:
             if sql_id in self.sql_pool:
-                if self.sql_pool[sql_id].is_busy() is False:
+                if int(time.time()) - self.sql_pool[sql_id].last_execute_time > 30:
                     self.sql_pool.pop(sql_id)
                     count += 1
-        print('计划清理',len(kill_connect),'个空闲连接，实际清理',count,'个')
+        # print('计划清理',len(kill_connect),'个空闲连接，实际清理',count,'个')
         return
 
     def get_table_data(self,table,query):
@@ -82,12 +80,12 @@ class data_manager(object):
             if sql.is_busy() is False:
                 sql.become_busy()
                 return sql
-        print('数据库连接池全忙状态，创建新的数据库链接')
+        # print('数据库连接池全忙状态，创建新的数据库链接')
         sql = self.create_new_sql()
         sql.become_busy()
         self.add_new_sql(sql)
-        print('创建完毕')
-        print('数据库连接池全忙状态，创建新的数据库链接', '新连接id:', id(sql))
+        # print('创建完毕')
+        # print('数据库连接池全忙状态，创建新的数据库链接', '新连接id:', id(sql))
         return sql
 
     def add_new_sql(self, sql):
@@ -109,7 +107,7 @@ class data_manager(object):
     def create(self, table, colums, table_comment = '',show_sql=False):
         sql = self.find_free_sql()
         # sql.become_busy()
-        print('执行这次sql请求的链接是', id(sql))
+        # print('执行这次sql请求的链接是', id(sql))
         result = sql.create(table, colums, table_comment,show_sql)
         sql.become_free()
         return result
@@ -192,7 +190,7 @@ class data_manager(object):
         # print(sql)
         sql = self.find_free_sql()
         # sql.become_busy()
-        print('执行这次sql请求的链接是', id(sql))
+        # print('执行这次sql请求的链接是', id(sql))
         result = sql.query_one(sql_query, show_sql)
         sql.become_free()
         return result
