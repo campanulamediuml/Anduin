@@ -39,7 +39,7 @@ class Base(object):
             if self._engine != sqlite:
                 self._load_tables()
             # print('数据库模块连接成功')
-            print('connect success!')
+            # print('connect success!')
             # IntervalTask(30, self.keep_connect)
         except Exception as e:
             # print(e)
