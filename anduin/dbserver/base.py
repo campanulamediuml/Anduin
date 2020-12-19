@@ -31,25 +31,19 @@ class Base(object):
         self.db = None
         self.connect_db()
         self.last_connect_time = int(time.time())
-        # print(self.id)
 
     def connect_db(self):
         try:
             self.db = self.connect()
             if self._engine != sqlite:
                 self._load_tables()
-            # print('数据库模块连接成功')
-            # print('connect success!')
-            # IntervalTask(30, self.keep_connect)
         except Exception as e:
-            # print(e)
             print('connect fail', str(e))
-            # print('数据库模块连接成功',str(e))
             pass
 
     def connect(self):
         if self._engine == mysql:
-            self.db = self.db_engine.connect(self._host, self._user, self._psw, self._dbname, charset='utf8',autocommit=True)
+            self.db = self.db_engine.connect(self._host, self._user, self._psw, self._dbname, charset='utf8',connect_timeout=60)
             return self.db
         if self._engine == sqlite:
             self.db = self.db_engine.connect(self._dbname)
@@ -61,9 +55,13 @@ class Base(object):
         return
 
     def become_free(self):
+        self.commit()
         self._is_busy = 0
         self.executing_query = ''
         return
+
+    def disconnect(self):
+        self.db.close()
 
     def is_busy(self):
         if self._is_busy == 1:
@@ -122,13 +120,12 @@ class Base(object):
 
         tail = tail[:-1] + ')'
         sql += tail
-        # sql += 'charset=utf8mb4'
         if self._engine == mysql:
             sql += 'charset=utf8mb4,engine=innodb,comment="%s"'%(table_comment)
         if self._engine == sqlite:
             sql = sql.replace('int AUTO_INCREMENT primary key','INTEGER PRIMARY KEY AUTOINCREMENT')
         self.query(sql, show_sql)
-        self.db.commit()
+        self.commit()
         return
 
     def find_info(self, table, conditions, or_cond, fields=None, group=None, order=None, limit=None):
@@ -140,7 +137,6 @@ class Base(object):
         if fields is None:
             return
         sql = 'select %s from %s where  ' % (','.join(fields), table)
-        # if conditions == []:
         sql = Base.bind_conditions(sql, conditions, or_cond)
 
         if group is not None:
@@ -161,14 +157,12 @@ class Base(object):
 
     @staticmethod
     def bind_conditions(sql, conditions, or_cond,unique = True):
-        # print(sql)
         if conditions is None:
             conditions = []
         if or_cond is None:
             or_cond = []
         if len(or_cond) + len(conditions) == 0:
             return sql[:-7]
-
         if len(conditions) > 0:
             for unit in conditions:
                 value = unit[2]
@@ -198,7 +192,6 @@ class Base(object):
 
         return sql
 
-
     # 查找数据（单条）
     def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False):
         sql = self.find_info(table, conditions, or_cond, fields, None, order, None)
@@ -223,7 +216,6 @@ class Base(object):
 
         else:
             fieldList = fields
-
         # self.db.commit()
         result = {
             'table':table,
@@ -320,30 +312,24 @@ class Base(object):
                 self.connect()
         cursor = self.db.cursor()
         try:
-            # res = time.time()
-            self.update_last_execute_time()
+            if sql != 'select 1':
+                self.update_last_execute_time()
+            # self.update_last_execute_time()
+            self.update_last_connect_time()
             cursor.execute(sql)
             results = cursor.fetchall()
-            if sql != 'select 1':
-                self.update_last_connect_time()
             if self._engine == sqlite:
-                self.db.commit()
+                self.commit()
         except Exception as e:
             print('<--------DBERROR-------->')
             print(sql)
             print('execute fail!', str(e))
             print('<--------DBERROR-------->')
             results = None
-
-        # self.update_last_connect_time()
-        # self.executing_query = ''
-        # if self._engine == sqlite:
-        #     self.db.commit()
-        # print(results)
-        # print(sql,'执行时间',time.time()-res)
-        # self.executing_query = ''
         return results
-        # results = cursor.fetchall()
+
+    def commit(self):
+        self.db.commit()
 
     def update_last_connect_time(self):
         self.last_connect_time = int(time.time())
@@ -357,23 +343,28 @@ class Base(object):
     def get_last_connect_time(self):
         return self.last_connect_time
 
-    def query_one(self, sql,show_sql=True):
-        if self._engine != sqlite:
-            try:
-                self.db.ping(reconnect=True)
-            except Exception as e:
-                print(sql, 'db error', str(e), 'reconnecting...')
-                self.connect()
-        # cur.execute(sql)
-        # db.commit()
-        if show_sql:
-            print(sql)
-        cursor = self.db.cursor()
-        cursor.execute(sql)
-        results = cursor.fetchall()
-        if self._engine == sqlite:
-            self.db.commit()
-        return results
+    # def query_one(self, sql,show_sql=True):
+    #     if self._engine != sqlite:
+    #         try:
+    #             self.db.ping(reconnect=True)
+    #         except Exception as e:
+    #             print(sql, 'db error', str(e), 'reconnecting...')
+    #             self.connect()
+    #     # cur.execute(sql)
+    #     # db.commit()
+    #     if show_sql:
+    #         print(sql)
+    #     try:
+    #         cursor = self.db.cursor()
+    #         cursor.execute(sql)
+    #         self.update_last_execute_time()
+    #         results = cursor.fetchall()
+    #         if self._engine == sqlite:
+    #             self.db.commit()
+    #         return results
+    #     except Exception as e:
+    #         print(str(e))
+
 
     def truncate(self, table, show_sql=False):
         sql = 'TRUNCATE TABLE %s' % table

@@ -71,3 +71,20 @@ delete data:
 
 using Ring.query() to execute sql directly like Ring.query('select * from table')
 
+all of these executions will have auto commit
+
+or you can do like
+
+    from anduin.river import Ring
+
+    db_manager = Ring.Base_pool['default']
+    sql = db_manager.find_free_sql()
+
+    sql.update('user',cond,or_cond=None,params=params )
+    sql.insert('user',params=params )
+    sql.delete('user',cond,or_cond=None)
+
+    sql.commit()
+
+to choose a certain sql connection to execute
+
