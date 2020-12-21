@@ -22,8 +22,8 @@ class data_manager(object):
 
         self.sql_pool = {}
         print('creating DB connection pool...')
-        for i in range(0,self.min_keep_connection):
-            self.new()
+        # for i in range(0,self.min_keep_connection):
+        self.new()
         print('connect done!')
         IntervalTask(data_manager.keep_cycle, self.keep_connect)
 
@@ -38,29 +38,36 @@ class data_manager(object):
             return self.t_data['database']+'.'+table_name
 
     def keep_connect(self):
-        can_update_sql = []
+        can_delete_sql = []
+        # can_update_sql = []
         count = 0
         for sql in self.sql_pool.values():
             if int(time.time()) - sql.last_execute_time > 30:
                 count += 1
-                if count > self.min_keep_connection:
-                    sql.become_free()
-                    can_update_sql.append(id(sql))
-                else:
-                    sql.become_busy()
-                    sql.keep_connect()
-                    sql.become_free()
-        self.kill_unused_connection(can_update_sql)
+                # if count > self.min_keep_connection:
+                can_delete_sql.append(id(sql))
+                # else:
+                #     can_update_sql.append(id(sql))
+        self.kill_unused_connection(can_delete_sql)
+
+        # 保持心跳
+        # for sql_id in can_update_sql:
+        #     sql = self.sql_pool[sql_id]
+        #     if sql.is_busy() == False:
+        #         sql.become_busy()
+        #         sql.keep_connect()
+        #         sql.become_free()
+        # 保持心跳
         return
 
     def kill_unused_connection(self, kill_connect):
         count = 0
         for sql_id in kill_connect:
             if sql_id in self.sql_pool:
-                if self.sql_pool[sql_id].is_busy() == False:
-                    self.sql_pool.pop(sql_id)
-                    count += 1
-        print('计划清理',len(kill_connect),'个空闲连接，实际清理',count,'个')
+                # if self.sql_pool[sql_id].is_busy() == False:
+                self.sql_pool.pop(sql_id)
+                count += 1
+        # print('计划清理',len(kill_connect),'个空闲连接，实际清理',count,'个')
         return
 
     def get_table_data(self,table,query):

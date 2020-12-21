@@ -146,7 +146,16 @@ class Base(object):
             sql = sql[:-1]
 
         if order is not None:
-            sql += 'order by %s %s , id %s ' % (order[0], order[1], order[1])
+            sql += 'order by '
+            count = 0
+            for i in order:
+                if count % 2 == 0:
+                    sql += '%s ' % i
+                else:
+                    sql += '%s ,' % i
+                count += 1
+            sql = sql[:-1]
+
 
         if limit is not None:
             sql += 'limit '
@@ -156,22 +165,20 @@ class Base(object):
         return sql
 
     @staticmethod
-    def bind_conditions(sql, conditions, or_cond,unique = True):
+    def bind_conditions(sql, conditions, or_cond):
         if conditions is None:
             conditions = []
         if or_cond is None:
             or_cond = []
         if len(or_cond) + len(conditions) == 0:
             return sql[:-7]
+
         if len(conditions) > 0:
             for unit in conditions:
                 value = unit[2]
                 if type("") == type(value):
                     value = "'%s'" % value
-                if 'username' in unit[0]:
-                    sql = sql + "binary %s %s %s " % (unit[0], unit[1], value) + "  and "
-                else:
-                    sql = sql + " %s %s %s " % (unit[0], unit[1], value) + "  and "
+                sql = sql + " %s %s binary %s " % (unit[0], unit[1], value) + "  and "
             sql = sql[:-4]
             if len(or_cond) > 0:
                 sql += ' or '
@@ -181,14 +188,11 @@ class Base(object):
                 value = unit[2]
                 if type("") == type(value):
                     value = "'%s'" % value
-                if 'username' in unit[0]:
-                    sql = sql + "binary %s %s %s " % (unit[0], unit[1], value) + ' or '
-                else:
-                    sql = sql + " %s %s %s " % (unit[0], unit[1], value) + ' or '
+                sql = sql + " %s %s binary %s " % (unit[0], unit[1], value) + ' or '
             sql = sql[:-3]
 
-        if unique == False:
-            sql = sql.replace('binary', '')
+        # if unique == False:
+        #     sql = sql.replace('binary', '')
 
         return sql
 
