@@ -5,6 +5,8 @@ import sqlite3
 mysql = 'mysql'
 sqlite = 'sqlite'
 
+danger_sig = ['--','-+','#']
+
 ENGINE_DICT = {
     'mysql':pymysql,
     'sqlite':sqlite3
@@ -76,7 +78,6 @@ class Base(object):
             self.query('select 1')
 
 
-
     def load_an_table(self, table):
         if self._engine == sqlite:
             sql = 'PRAGMA table_info(%s)'%table
@@ -128,16 +129,17 @@ class Base(object):
         self.commit()
         return
 
-    def find_info(self, table, conditions, or_cond, fields=None, group=None, order=None, limit=None):
-        if len(fields) == 1 and fields[0] == '*':
-            if table in self._tables:
-                fields = self._tables[table]
-            else:
-                fields = self.load_an_table(table)
+    @staticmethod
+    def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None):
+        # if len(fields) == 1 and fields[0] == '*':
+        #     if table in self._tables:
+        #         fields = self._tables[table]
+        #     else:
+        #         fields = self.load_an_table(table)
         if fields is None:
             return
-        sql = 'select %s from %s where  ' % (','.join(fields), table)
-        sql = Base.bind_conditions(sql, conditions, or_cond)
+        sql = 'select %s from %s where  '%(','.join(fields), table)
+        sql,sql_params = Base.bind_conditions(sql, conditions, or_cond)
 
         if group is not None:
             sql += 'group by '
@@ -162,23 +164,26 @@ class Base(object):
             for i in limit:
                 sql += '%s, ' % i
             sql = sql[:-2]
-        return sql
+        return sql, sql_params
 
     @staticmethod
     def bind_conditions(sql, conditions, or_cond):
+        sql_params = []
         if conditions is None:
             conditions = []
         if or_cond is None:
             or_cond = []
         if len(or_cond) + len(conditions) == 0:
-            return sql[:-7]
+            return sql[:-7],None
 
         if len(conditions) > 0:
             for unit in conditions:
                 value = unit[2]
-                if type("") == type(value):
-                    value = "'%s'" % value
-                sql = sql + " %s %s binary %s " % (unit[0], unit[1], value) + "  and "
+                sql = sql + " %s %s binary "%(unit[0], unit[1]) + '%s'
+                sql_params += [value]
+                sql += "  and "
+                if 'in' in unit[1]:
+                    sql = sql.replace('binary','')
             sql = sql[:-4]
             if len(or_cond) > 0:
                 sql += ' or '
@@ -186,26 +191,24 @@ class Base(object):
         if len(or_cond) > 0:
             for unit in or_cond:
                 value = unit[2]
-                if type("") == type(value):
-                    value = "'%s'" % value
-                sql = sql + " %s %s binary %s " % (unit[0], unit[1], value) + ' or '
+                sql = sql + " %s %s binary "%(unit[0], unit[1]) + '%s'
+                sql_params += [value]
+                sql += "  or "
+                if 'in' in unit[1]:
+                    sql = sql.replace('binary','')
             sql = sql[:-3]
 
-        # if unique == False:
-        #     sql = sql.replace('binary', '')
-
-        return sql
+        return sql,sql_params
 
     # 查找数据（单条）
     def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False):
-        sql = self.find_info(table, conditions, or_cond, fields, None, order, None)
+        sql,sql_params = self.find_info(table, conditions, or_cond, fields, None, order, None)
         if sql is None:
             return
 
         sql += " limit 1"
-        #
         # self.db.commit()
-        res = self.query(sql, show_sql)
+        res = self.query(sql, show_sql,sql_params)
         if res is None:
             return None
 
@@ -223,18 +226,18 @@ class Base(object):
         # self.db.commit()
         result = {
             'table':table,
-            'query':sql,
+            'query':sql%sql_params,
             'result':dict(zip(fieldList, res[0]))
         }
         return result
 
     # 查找数据
     def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False):
-        sql = self.find_info(table, conditions, or_cond, fields, group, order, limit)
+        sql,sql_params = self.find_info(table, conditions, or_cond, fields, group, order, limit)
         if sql is None:
             return
         #
-        res = self.query(sql, show_sql)
+        res = self.query(sql, show_sql,sql_params)
         if res is None:
             return None
 
@@ -255,7 +258,7 @@ class Base(object):
             result.append(data)
         res = {
             'table': table,
-            'query': sql,
+            'query': sql%sql_params,
             'result': result
         }
         return res
@@ -264,14 +267,18 @@ class Base(object):
         params = content
         keys = str(tuple(params.keys()))
         keys = keys.replace("'", "")
-        values = str(tuple(params.values()))
         if 1 == len(params):
             keys = keys[:-2] + ")"
-            values = values[:-2] + ")"
-
-        sql = 'insert into %s%s values %s ;' % (table, keys, values)
+        sql_params = []
+        sql = 'insert into %s%s values (' % (table, keys)
+        for i in  params.values():
+            sql_params.append(i)
+        for _ in params.values():
+            sql += '%s,'
+        sql = sql[:-1]
+        sql += ')'
         #
-        self.query(sql, show_sql)
+        self.query(sql, show_sql,sql_params)
         return
 
     def update(self, table, conditions, or_cond, params,show_sql=False):
@@ -280,39 +287,44 @@ class Base(object):
             # print('没有params，结束执行')
             return
         sql = 'update %s set ' % table
+        sql_params_header = []
         for param, value in params.items():
-            if type("") == type(value):
-                value = "'%s'" % value
-            sql = sql + " %s = %s," % (param, value)
+            sql = sql + " %s = " % param + '%s,'
+            sql_params_header += [value]
 
         sql = sql[:-1] + ' where  '
-        sql = Base.bind_conditions(sql, conditions, or_cond)
+        sql,sql_params = Base.bind_conditions(sql, conditions, or_cond)
         # print(sql)
+        sql_params = sql_params_header + sql_params
 
-        self.query(sql, show_sql)
+        self.query(sql, show_sql,sql_params)
             # print('自动提交完毕')
         return
 
     def delete(self, table, condition, or_cond, show_sql=False):
-        sql = 'delete from %s where  ' % table
-        sql = Base.bind_conditions(sql, condition, or_cond)
+        sql = 'delete from %s where  ' %table
+        sql,sql_params = Base.bind_conditions(sql, condition, or_cond)
         #  #
-        self.query(sql, show_sql)
+        self.query(sql, show_sql,sql_params)
         return
 
-    def query(self, sql, show_sql=False):
+    def query(self, sql, show_sql=False,sql_params=None):
+        # for i in danger_sig:
+        #     if i in sql:
+        #         return None
+        dummy_sql = sql%tuple(sql_params) if sql_params is not None else sql
         if self._engine == sqlite:
             sql = sql.replace('binary','')
         self.executing_query = sql
         if sql == 'select 1':
             show_sql = False
         if show_sql is True:
-            print(sql)
+            print(dummy_sql)
         if self._engine != sqlite:
             try:
                 self.db.ping(reconnect=True)
             except Exception as e:
-                print(sql, 'db error', str(e), 'reconnecting...')
+                print(dummy_sql, 'db error', str(e), 'reconnecting...')
                 self.connect()
         cursor = self.db.cursor()
         try:
@@ -320,13 +332,16 @@ class Base(object):
                 self.update_last_execute_time()
             # self.update_last_execute_time()
             self.update_last_connect_time()
-            cursor.execute(sql)
+            if sql_params is not None:
+                cursor.execute(sql,tuple(sql_params))
+            else:
+                cursor.execute(sql)
             results = cursor.fetchall()
             if self._engine == sqlite:
                 self.commit()
         except Exception as e:
             print('<--------DBERROR-------->')
-            print(sql)
+            print(dummy_sql)
             print('execute fail!', str(e))
             print('<--------DBERROR-------->')
             results = None

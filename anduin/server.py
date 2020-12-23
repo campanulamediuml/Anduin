@@ -1,4 +1,5 @@
 from .construct_file import frame_constructor
+from .dbserver.base import Base
 from .dbserver.data_manager import data_manager
 db_config = None
 
@@ -179,6 +180,10 @@ class Data(object):
         except Exception as e:
             print(str(e))
 
+    @staticmethod
+    def make_select_query(table, conditions, or_cond=None, fields=None, group=None, order=None, limit=None):
+        sql_frame,params = Base.find_info(table, conditions, or_cond, fields, group, order, limit)
+        return sql_frame%params
 
 
 
