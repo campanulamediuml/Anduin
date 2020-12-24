@@ -13,14 +13,14 @@ ENGINE_DICT = {
 }
 
 class Base(object):
-
-    def __init__(self, host, user, psw, dbname,engine):
+    def __init__(self, host, user, psw, dbname,engine,charset):
         self.id = id(self)
         self._host = host
         self._user = user
         self._psw = psw
         self._dbname = dbname
         self._engine = engine
+        self._charset = charset
         self.db_engine = None
         if self._engine in ENGINE_DICT:
             self.db_engine = ENGINE_DICT[self._engine]
@@ -45,7 +45,7 @@ class Base(object):
 
     def connect(self):
         if self._engine == mysql:
-            self.db = self.db_engine.connect(self._host, self._user, self._psw, self._dbname, charset='utf8',connect_timeout=60)
+            self.db = self.db_engine.connect(self._host, self._user, self._psw, self._dbname, charset=self._charset,connect_timeout=60)
             return self.db
         if self._engine == sqlite:
             self.db = self.db_engine.connect(self._dbname)
@@ -226,7 +226,7 @@ class Base(object):
         # self.db.commit()
         result = {
             'table':table,
-            'query':sql%sql_params,
+            'query':sql%tuple(sql_params) if sql_params is not None else sql,
             'result':dict(zip(fieldList, res[0]))
         }
         return result
@@ -258,7 +258,7 @@ class Base(object):
             result.append(data)
         res = {
             'table': table,
-            'query': sql%sql_params,
+            'query': sql%tuple(sql_params) if sql_params is not None else sql,
             'result': result
         }
         return res
@@ -315,7 +315,8 @@ class Base(object):
         dummy_sql = sql%tuple(sql_params) if sql_params is not None else sql
         if self._engine == sqlite:
             sql = sql.replace('binary','')
-        self.executing_query = sql
+            sql = sql.replace('%s', '?')
+        self.executing_query = dummy_sql
         if sql == 'select 1':
             show_sql = False
         if show_sql is True:

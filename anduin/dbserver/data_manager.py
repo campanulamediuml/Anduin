@@ -19,6 +19,8 @@ class data_manager(object):
         self.min_keep_connection = db_config['min_keep_connection'] if 'min_keep_connection' in db_config else 1
         if 'engine' not in self.t_data or self.t_data['engine'] not in ENGINE_DICT:
             self.t_data['engine'] = mysql
+        if 'charset' not in self.t_data:
+            self.t_data['charset'] = 'utf8mb4'
 
         self.sql_pool = {}
         print('creating DB connection pool...')
@@ -106,7 +108,7 @@ class data_manager(object):
         return
 
     def create_new_sql(self, ):
-        sql = Base(self.t_data['host'], self.t_data['user'], self.t_data['password'], self.t_data['database'],self.t_data['engine'])
+        sql = Base(self.t_data['host'], self.t_data['user'], self.t_data['password'], self.t_data['database'],self.t_data['engine'],self.t_data['charset'])
         # sql.become_busy()
         # self.sql_pool.append(sql)
         return sql
