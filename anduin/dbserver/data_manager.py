@@ -85,10 +85,15 @@ class data_manager(object):
             return None
 
     def find_free_sql(self):
-        for sql in self.sql_pool.values():
-            if sql.is_busy() is False:
-                sql.become_busy()
-                return sql
+        try:
+            sql_list = self.sql_pool.values()
+            for sql in sql_list:
+                if sql.is_busy() is False and int(time.time()) - sql.last_execute_time < 29:
+                    sql.become_busy()
+                    return sql
+        except Exception as e:
+            print(str(e),'查找空闲sql链接时遍历错误')
+            pass
         # print('数据库连接池全忙状态，创建新的数据库链接')
         sql = self.create_new_sql()
         sql.become_busy()

@@ -82,7 +82,7 @@ class Base(object):
         if self._engine == sqlite:
             sql = 'PRAGMA table_info(%s)'%table
         else:
-            sql = 'show fields from ' + table
+            sql = 'show fields from ' +table
         res = self.query(sql, show_sql=False)
         if res is None:
             return
@@ -99,7 +99,8 @@ class Base(object):
         tables = tuple(map(lambda x: x[0], res))
         # print(tables)
         for table in tables:
-            self.load_an_table(table)
+            table_name = self._dbname+'.'+table
+            self.load_an_table(table_name)
 
     def _load_all_fileds(self):
         pass
@@ -331,8 +332,7 @@ class Base(object):
         try:
             if sql != 'select 1':
                 self.update_last_execute_time()
-            # self.update_last_execute_time()
-            self.update_last_connect_time()
+                self.update_last_connect_time()
             if sql_params is not None:
                 cursor.execute(sql,tuple(sql_params))
             else:
