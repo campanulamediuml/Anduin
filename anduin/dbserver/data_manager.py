@@ -28,7 +28,6 @@ class data_manager(object):
         self.new()
         print('connect done!')
         IntervalTask(data_manager.keep_cycle, self.keep_connect)
-
         self.mem_cache = {}
     # def kill_hanged_connection(self):
     #     dead_sql = []
@@ -44,7 +43,7 @@ class data_manager(object):
         # can_update_sql = []
         count = 0
         for sql in self.sql_pool.values():
-            if int(time.time()) - sql.last_execute_time > 30:
+            if int(time.time()) - sql.last_execute_time > 40:
                 count += 1
                 # if count > self.min_keep_connection:
                 can_delete_sql.append(id(sql))

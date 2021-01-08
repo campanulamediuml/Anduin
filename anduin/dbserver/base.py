@@ -54,6 +54,8 @@ class Base(object):
 
     def become_busy(self):
         self._is_busy = 1
+        self.last_execute_time = int(time.time())
+        self.last_connect_time = int(time.time())
         return
 
     def become_free(self):
@@ -132,14 +134,12 @@ class Base(object):
 
     @staticmethod
     def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None):
-        # if len(fields) == 1 and fields[0] == '*':
-        #     if table in self._tables:
-        #         fields = self._tables[table]
-        #     else:
-        #         fields = self.load_an_table(table)
+
         if fields is None:
             return
+
         sql = 'select %s from %s where  '%(','.join(fields), table)
+        # print(sql)
         sql,sql_params = Base.bind_conditions(sql, conditions, or_cond)
 
         if group is not None:
@@ -203,6 +203,13 @@ class Base(object):
 
     # 查找数据（单条）
     def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False):
+        if table not in self._tables:
+            self.load_an_table(table)
+
+        if fields[0] == '*' and len(fields) == 1:
+            fieldList = self._tables[table]
+            fields = fieldList
+
         sql,sql_params = self.find_info(table, conditions, or_cond, fields, None, order, None)
         if sql is None:
             return
@@ -216,24 +223,30 @@ class Base(object):
         if 0 == len(res):
             return None
 
-        if table not in self._tables:
-            self.load_an_table(table)
+        # if table not in self._tables:
+        #     self.load_an_table(table)
 
         if fields[0] == '*' and len(fields) == 1:
             fieldList = self._tables[table]
-
         else:
             fieldList = fields
         # self.db.commit()
         result = {
             'table':table,
             'query':sql%tuple(sql_params) if sql_params is not None else sql,
-            'result':dict(zip(fieldList, res[0]))
+            'result':dict(zip(fields, res[0]))
         }
         return result
 
     # 查找数据
     def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False):
+        if table not in self._tables:
+            self.load_an_table(table)
+
+        if fields[0] == '*' and len(fields) == 1:
+            fieldList = self._tables[table]
+            fields = fieldList
+
         sql,sql_params = self.find_info(table, conditions, or_cond, fields, group, order, limit)
         if sql is None:
             return
@@ -245,17 +258,9 @@ class Base(object):
         if 0 == len(res):
             return None
 
-        if table not in self._tables:
-            self.load_an_table(table)
-
-        if fields[0] == '*' and len(fields) == 1:
-            fieldList = self._tables[table]
-        else:
-            fieldList = fields
-
         result = []
         for data in res:
-            data = dict(zip(fieldList, data))
+            data = dict(zip(fields, data))
             result.append(data)
         res = {
             'table': table,
