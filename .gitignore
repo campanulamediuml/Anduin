@@ -17,3 +17,4 @@ py38install.sh
 anduin.egg-info
 anduin.egg-info/*
 *.db
+get_size.py

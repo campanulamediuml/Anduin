@@ -2,6 +2,8 @@ import time
 import pymysql
 import sqlite3
 
+from pymysql.cursors import DictCursor
+
 mysql = 'mysql'
 sqlite = 'sqlite'
 
@@ -88,7 +90,7 @@ class Base(object):
         res = self.query(sql, show_sql=False)
         if res is None:
             return
-        column_list = list(map(lambda x: x[0], res))
+        column_list = list(map(lambda x: tuple(x.values())[0],res))
         if 'signal' in column_list:
             column_list.remove('signal')
         self._tables[table] = column_list
@@ -98,7 +100,8 @@ class Base(object):
     def _load_tables(self, show_sql=False):
         sql = 'show tables'
         res = self.query(sql, show_sql)
-        tables = tuple(map(lambda x: x[0], res))
+        # print(res)
+        tables = tuple(map(lambda x: tuple(x.values())[0],res))
         # print(tables)
         for table in tables:
             table_name = self._dbname+'.'+table
@@ -133,7 +136,7 @@ class Base(object):
         return
 
     @staticmethod
-    def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None):
+    def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None,for_update=False):
 
         if fields is None:
             return
@@ -165,6 +168,9 @@ class Base(object):
             for i in limit:
                 sql += '%s, ' % i
             sql = sql[:-2]
+
+        if for_update is True:
+            sql += ' for update'
         return sql, sql_params
 
     @staticmethod
@@ -202,7 +208,7 @@ class Base(object):
         return sql,sql_params
 
     # 查找数据（单条）
-    def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False):
+    def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False,for_update=False):
         if table not in self._tables:
             self.load_an_table(table)
 
@@ -210,36 +216,33 @@ class Base(object):
             fieldList = self._tables[table]
             fields = fieldList
 
-        sql,sql_params = self.find_info(table, conditions, or_cond, fields, None, order, None)
+        sql,sql_params = self.find_info(table, conditions, or_cond, fields, None, order, None,for_update)
         if sql is None:
             return
 
         sql += " limit 1"
         # self.db.commit()
-        res = self.query(sql, show_sql,sql_params)
+        res = self.query(sql, show_sql,sql_params,return_dict=True)
         if res is None:
             return None
 
         if 0 == len(res):
             return None
 
-        # if table not in self._tables:
-        #     self.load_an_table(table)
-
-        if fields[0] == '*' and len(fields) == 1:
-            fieldList = self._tables[table]
+        if self._engine == sqlite:
+            result = dict(zip(fields, res[0]))
         else:
-            fieldList = fields
-        # self.db.commit()
+            result = res[0]
+
         result = {
             'table':table,
             'query':sql%tuple(sql_params) if sql_params is not None else sql,
-            'result':dict(zip(fields, res[0]))
+            'result':result
         }
         return result
 
     # 查找数据
-    def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False):
+    def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False,for_update=False):
         if table not in self._tables:
             self.load_an_table(table)
 
@@ -247,11 +250,11 @@ class Base(object):
             fieldList = self._tables[table]
             fields = fieldList
 
-        sql,sql_params = self.find_info(table, conditions, or_cond, fields, group, order, limit)
+        sql,sql_params = self.find_info(table, conditions, or_cond, fields, group, order, limit,for_update)
         if sql is None:
             return
         #
-        res = self.query(sql, show_sql,sql_params)
+        res = self.query(sql, show_sql,sql_params,return_dict=True)
         if res is None:
             return None
 
@@ -259,9 +262,12 @@ class Base(object):
             return None
 
         result = []
-        for data in res:
-            data = dict(zip(fields, data))
-            result.append(data)
+        if self._engine == sqlite:
+            for data in res:
+                data = dict(zip(fields, data))
+                result.append(data)
+        else:
+            result = res
         res = {
             'table': table,
             'query': sql%tuple(sql_params) if sql_params is not None else sql,
@@ -301,6 +307,8 @@ class Base(object):
         sql = sql[:-1] + ' where  '
         sql,sql_params = Base.bind_conditions(sql, conditions, or_cond)
         # print(sql)
+        if sql_params == None:
+            sql_params = []
         sql_params = sql_params_header + sql_params
 
         self.query(sql, show_sql,sql_params)
@@ -314,7 +322,7 @@ class Base(object):
         self.query(sql, show_sql,sql_params)
         return
 
-    def query(self, sql, show_sql=False,sql_params=None):
+    def query(self, sql, show_sql=False,sql_params=None,return_dict=False):
         # for i in danger_sig:
         #     if i in sql:
         #         return None
@@ -326,14 +334,18 @@ class Base(object):
         if sql == 'select 1':
             show_sql = False
         if show_sql is True:
-            print(dummy_sql)
+            print('sql_id',id(self),dummy_sql)
         if self._engine != sqlite:
             try:
                 self.db.ping(reconnect=True)
             except Exception as e:
                 print(dummy_sql, 'db error', str(e), 'reconnecting...')
                 self.connect()
-        cursor = self.db.cursor()
+        if self._engine == mysql and return_dict == True:
+            cursor = self.db.cursor(DictCursor)
+        else:
+            cursor = self.db.cursor()
+
         try:
             if sql != 'select 1':
                 self.update_last_execute_time()
@@ -367,29 +379,6 @@ class Base(object):
 
     def get_last_connect_time(self):
         return self.last_connect_time
-
-    # def query_one(self, sql,show_sql=True):
-    #     if self._engine != sqlite:
-    #         try:
-    #             self.db.ping(reconnect=True)
-    #         except Exception as e:
-    #             print(sql, 'db error', str(e), 'reconnecting...')
-    #             self.connect()
-    #     # cur.execute(sql)
-    #     # db.commit()
-    #     if show_sql:
-    #         print(sql)
-    #     try:
-    #         cursor = self.db.cursor()
-    #         cursor.execute(sql)
-    #         self.update_last_execute_time()
-    #         results = cursor.fetchall()
-    #         if self._engine == sqlite:
-    #             self.db.commit()
-    #         return results
-    #     except Exception as e:
-    #         print(str(e))
-
 
     def truncate(self, table, show_sql=False):
         sql = 'TRUNCATE TABLE %s' % table

@@ -2,6 +2,9 @@ import codecs
 import os
 from setuptools import setup
 
+import anduin
+
+
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()
 
@@ -9,7 +12,7 @@ def read(fname):
 setup(
     # 以下为必需参数
     name='anduin',  # 模块名
-    version='2.1.11',  # 当前版本
+    version=anduin.__version__,  # 当前版本
     description='a lite mysql & sqlite3 connect engine, mapping table into k-v structure',  # 简短描述
     py_modules=["anduin"],  # 单文件模块写法
     # ckages=find_packages(exclude=['contrib', 'docs', 'tests']),  # 多文件模块写法

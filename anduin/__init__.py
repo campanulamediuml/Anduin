@@ -21,4 +21,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.'''
 
 # from .server import Data
+from functools import wraps
 from .server import *
+
+__version__='4.0.2'
+
+def func_time(f):
+    """
+    简单记录执行时间
+    :param f:
+    :return:
+    """
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = f(*args, **kwargs)
+        end = time.time()
+        info = str(f.__name__) + ' took ' + str(end - start) + ' seconds '
+        print(info)
+        return result
+
+    return wrapper

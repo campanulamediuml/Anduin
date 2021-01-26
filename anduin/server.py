@@ -1,3 +1,5 @@
+import time
+
 from .construct_file import frame_constructor
 from .dbserver.base import Base
 from .dbserver.data_manager import data_manager
@@ -39,17 +41,20 @@ class Data(object):
             print('本次任务通过',base_id,'执行')
         if base_id not in Data.Base_pool:
             return
-        sql_pool = Data.Base_pool[base_id].sql_pool
+        sql_pool = list(Data.Base_pool[base_id].threading_pool.values())
         busy_list = []
         all_list = []
         free_list = []
         sql_executing = {}
-        for sql_id in sql_pool:
-            sql = sql_pool[sql_id]
+        now_time = int(time.time())
+        for sql_status in sql_pool:
+            if now_time - sql_status[1] > 45:
+                continue
+            sql = sql_status[0]
+            sql_id = id(sql)
             if sql.is_busy() is True:
                 busy_list.append(sql_id)
                 sql_executing[sql_id] = [sql.executing_query,sql.last_execute_time]
-
 
             if sql.is_busy() is False:
                 free_list.append(sql_id)
@@ -94,17 +99,17 @@ class Data(object):
         return data
 
     @staticmethod
-    def find(table, conditions, fields=('*',), or_cond=None, order=None, show_sql=False,base_id='default',show_manager_id=False,from_cache=False):
+    def find(table, conditions, fields=('*',), or_cond=None, order=None, show_sql=False,base_id='default',show_manager_id=False,from_cache=False,for_update=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
 
-        return Data.Base_pool[base_id].find(table, conditions, or_cond, fields, order, show_sql,from_cache) if base_id in Data.Base_pool else None
+        return Data.Base_pool[base_id].find(table, conditions, or_cond, fields, order, show_sql,from_cache,for_update) if base_id in Data.Base_pool else None
 
     @staticmethod
-    def select(table, conditions, fields=('*',),or_cond=None, group=None, order=None, limit=None, show_sql=False,base_id='default',show_manager_id=False,from_cache=False):
+    def select(table, conditions, fields=('*',),or_cond=None, group=None, order=None, limit=None, show_sql=False,base_id='default',show_manager_id=False,from_cache=False,for_update=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-        return Data.Base_pool[base_id].select(table, conditions, or_cond, fields, group, order, limit, show_sql,from_cache) if base_id in Data.Base_pool else None
+        return Data.Base_pool[base_id].select(table, conditions, or_cond, fields, group, order, limit, show_sql,from_cache,for_update) if base_id in Data.Base_pool else None
 
 
     @staticmethod
@@ -139,10 +144,10 @@ class Data(object):
 
 
     @staticmethod
-    def query(sql, show_sql=False,base_id='default',show_manager_id=False):
+    def query(sql, show_sql=False,base_id='default',show_manager_id=False,return_dict=False):
         if show_manager_id is True:
             print('本次任务通过',base_id,'执行')
-        return Data.Base_pool[base_id].query(sql, show_sql) if base_id in Data.Base_pool else None
+        return Data.Base_pool[base_id].query(sql, show_sql,return_dict) if base_id in Data.Base_pool else None
 
     @staticmethod
     def get_cache(table,safe=True):
