@@ -90,7 +90,7 @@ class Base(object):
         res = self.query(sql, show_sql=False)
         if res is None:
             return
-        column_list = list(map(lambda x: tuple(x.values())[0],res))
+        column_list = list(map(lambda x: x[0],res))
         if 'signal' in column_list:
             column_list.remove('signal')
         self._tables[table] = column_list
@@ -101,7 +101,7 @@ class Base(object):
         sql = 'show tables'
         res = self.query(sql, show_sql)
         # print(res)
-        tables = tuple(map(lambda x: tuple(x.values())[0],res))
+        tables = list(map(lambda x: x[0],res))
         # print(tables)
         for table in tables:
             table_name = self._dbname+'.'+table

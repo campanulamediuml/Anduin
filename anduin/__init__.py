@@ -24,7 +24,7 @@ THE SOFTWARE.'''
 from functools import wraps
 from .server import *
 
-__version__='4.0.2'
+__version__='4.0.3'
 
 def func_time(f):
     """

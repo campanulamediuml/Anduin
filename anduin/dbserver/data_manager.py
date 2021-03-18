@@ -95,42 +95,26 @@ class data_manager(object):
             return None
 
     def find_free_sql(self):
-        # try:
-        #     sql_list = self.sql_pool.values()
-        #     for sql in sql_list:
-        #         if sql.is_busy() is False and int(time.time()) - sql.last_execute_time < 29:
-        #             sql.become_busy()
-        #             return sql
-        # except Exception as e:
-        #     print(str(e),'查找空闲sql链接时遍历错误')
-        #     # pass
-        # print('数据库连接池全忙状态，创建新的数据库链接')
-        #
-        # sql = self.create_new_sql()
-        # sql.become_busy()
-        # self.add_new_sql(sql)
-        # print('创建完毕新连接id:', id(sql))
-        # print('数据库连接池全忙状态，创建新的数据库链接', '新连接id:', id(sql))
-        # return sql
+        # 获取当前线程绑定的sql-session
         mypid = str(os.getpid())
         mytid = str(threading.currentThread().ident)
         thread_id = mypid+'.'+mytid
         # print('本次数据库请求线程id', thread_id)
         if thread_id in self.threading_pool:
-            sql_status = self.threading_pool[thread_id]
-            if int(time.time()) - sql_status[1] < 45:
-                sql = sql_status[0]
-                sql.become_busy()
-                self.threading_pool[thread_id] = (sql, int(time.time()))
-                return sql
+            session_status = self.threading_pool[thread_id]
+            if int(time.time()) - session_status[1] < 45:
+                session = session_status[0]
+                session.become_busy()
+                self.threading_pool[thread_id] = (session, int(time.time()))
+                return session
 
-        sql = self.create_new_sql()
-        sql.become_busy()
+        session = self.create_new_sql()
+        session.become_busy()
         # self.add_new_sql(sql)
-        self.threading_pool[thread_id] = (sql,int(time.time()))
+        self.threading_pool[thread_id] = (session,int(time.time()))
         # self.threading_out_time_pool[thread_id] = int(time.time())
         # print('为线程%s更新数据库链接%s'%(thread_id,id(sql)))
-        return sql
+        return session
 
     # def add_new_sql(self, sql):
     #     self.sql_pool[id(sql)] = sql
