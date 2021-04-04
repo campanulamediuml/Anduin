@@ -1,4 +1,4 @@
-'''Anduin: A light python mysql connector.
+"""Anduin: A light python mysql connector.
 
 Copyright (c) 2020-2024 Campanula<campanulamediuml@gmail.com>
 
@@ -18,12 +18,12 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.'''
+THE SOFTWARE."""
 # <=========>
 from functools import wraps
 from .server import *
 
-__version__ = '4.0.9'
+__version__ = '4.0.10'
 
 
 def func_time(f):

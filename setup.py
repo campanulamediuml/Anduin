@@ -4,20 +4,25 @@ from setuptools import setup
 
 import anduin
 
+INIT_PATH = './anduin/__init__.py'
+COPY_RIGHT_FILE = './COPYING.txt'
+
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
 def add_copy_right():
     # pass
     split_line = '\n# <=========>\n'
-    cpright = "'''" + open('COPYING.txt').read() + "'''"
-    code_content = open('anduin/__init__.py').read().split(split_line)
+    cpright = '"""' + open(COPY_RIGHT_FILE).read() + '"""'
+    code_content = open(INIT_PATH).read().split(split_line)
     if len(code_content) == 1:
         code = code_content[0]
     else:
         code = code_content[1]
-    open('anduin/__init__.py','w').write(cpright+split_line+code)
+    open(INIT_PATH, 'w').write(cpright + split_line + code)
+
 
 if __name__ == '__main__':
     print(os.system('ls'))
