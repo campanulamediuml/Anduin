@@ -7,7 +7,6 @@ anduindata.egg-info/*
 dist/*
 setup.py
 config/*
-upload.py
 
 db_frame.py
 default
