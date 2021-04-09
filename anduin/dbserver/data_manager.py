@@ -37,51 +37,14 @@ class data_manager(object):
         # IntervalTask(data_manager.keep_cycle, self.keep_connect)
         self.mem_cache = {}
 
+    # 拼接'库.表'结构
     def get_table_name(self, table_name):
         if '.' in table_name:
             return table_name
         else:
             return self.t_data['database'] + '.' + table_name
 
-    def keep_connect(self):
-        pass
-        # print('查看死亡链接')
-        # can_delete_sql = []
-        # count = 0
-        # for sql in self.sql_pool.values():
-        #     if int(time.time()) - sql.last_execute_time > 40:
-        #         count += 1
-        #         can_delete_sql.append(id(sql))
-        #
-        # self.kill_unused_connection(can_delete_sql)
-        # for sql in self.sql_pool.values():
-        #     if sql.is_busy() == False:
-        #         sql.become_busy()
-        #         sql.keep_connect()
-        #         sql.become_free()
-        # return
-        # <===================>
-        # can_delete_sql_id_list = []
-        # count = 0
-        # for sql in self.sql_pool.values():
-        #     if int(time.time()) - sql.last_execute_time > 40:
-        #         count += 1
-        #         can_delete_sql_id_list.append(id(sql))
-        # self.kill_unused_connection(can_delete_sql_id_list)
-        # for sql in self.sql_pool.values():
-        #     if sql.is_busy() == False:
-        #         sql.become_busy()
-        #         sql.keep_connect()
-        #         sql.become_free()
-
-    # def kill_unused_connection(self, kill_connect):
-    #     count = 0
-    #     for sql_id in kill_connect:
-    #         if sql_id in self.sql_pool:
-    #             self.sql_pool.pop(sql_id)
-    #             count += 1
-    #     return
-
+    # 从缓存中获取sql数据
     def get_table_data(self, table, query):
         try:
             return self.mem_cache[table][query]
@@ -114,7 +77,6 @@ class data_manager(object):
         session.become_busy()
         # self.add_new_sql(sql)
         self.threading_pool[thread_id] = (session, int(time.time()))
-        # self.threading_out_time_pool[thread_id] = int(time.time())
         # print('为线程%s更新数据库链接%s'%(thread_id,id(sql)))
         return session
 
