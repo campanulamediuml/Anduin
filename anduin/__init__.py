@@ -20,26 +20,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE."""
 # <=========>
-from functools import wraps
+import os
+
+from .Scheduler import get_filename
 from .server import *
+__version__ = "5.0.7"
 
-__version__ = "5.0.6"
-
-
-def func_time(f):
-    """
-    简单记录执行时间
-    :param f:
-    :return:
-    """
-
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        result = f(*args, **kwargs)
-        end = time.time()
-        info = str(f.__name__) + ' took ' + str(end - start) + ' seconds '
-        print(info)
-        return result
-
-    return wrapper
+try:
+    os.mkdir('.anduin')
+except Exception as e:
+    pass
+dbg('anduin调用日志保存在%s'%get_filename())

@@ -71,7 +71,7 @@ class frame_constructor(object):
     def write_table_frame(self, table_frame):
         self.fh.write('column = [')
         self.changeline()
-        # print(table_frame)
+        # dbg(table_frame)
         for line in table_frame:
             if isinstance(line, dict):
                 continue

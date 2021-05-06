@@ -43,7 +43,7 @@ class Base(object):
             if self._engine != sqlite:
                 self._load_tables()
         except Exception as e:
-            print('connect fail', str(e))
+            dbg('connect fail', str(e))
             pass
 
     def connect(self):
@@ -100,9 +100,9 @@ class Base(object):
     def _load_tables(self, show_sql=False):
         sql = 'show tables'
         res = self.query(sql, show_sql)
-        # print(res)
+        # dbg(res)
         tables = list(map(lambda x: x[0], res))
-        # print(tables)
+        # dbg(tables)
         for table in tables:
             table_name = self._dbname + '.' + table
             self.load_an_table(table_name)
@@ -142,7 +142,7 @@ class Base(object):
             return
 
         sql = 'select %s from %s where  ' % (','.join(fields), table)
-        # print(sql)
+        # dbg(sql)
         sql, sql_params = Base.bind_conditions(sql, conditions, or_cond)
 
         if group is not None:
@@ -294,9 +294,9 @@ class Base(object):
         return
 
     def update(self, table, conditions, or_cond, params, show_sql=False):
-        # print('开始执行')
+        # dbg('开始执行')
         if params == {} or params is None:
-            # print('没有params，结束执行')
+            # dbg('没有params，结束执行')
             return
         sql = 'update %s set ' % table
         sql_params_header = []
@@ -306,13 +306,13 @@ class Base(object):
 
         sql = sql[:-1] + ' where  '
         sql, sql_params = Base.bind_conditions(sql, conditions, or_cond)
-        # print(sql)
+        # dbg(sql)
         if sql_params is None:
             sql_params = []
         sql_params = sql_params_header + sql_params
 
         self.query(sql, show_sql, sql_params)
-        # print('自动提交完毕')
+        # dbg('自动提交完毕')
         return
 
     def delete(self, table, condition, or_cond, show_sql=False):
@@ -334,12 +334,12 @@ class Base(object):
         if sql == 'select 1':
             show_sql = False
         if show_sql is True:
-            print('sql_id', id(self), dummy_sql)
+            dbg('sql_id', id(self), dummy_sql)
         if self._engine != sqlite:
             try:
                 self.db.ping(reconnect=True)
             except Exception as e:
-                print(dummy_sql, 'db error', str(e), 'reconnecting...')
+                dbg(dummy_sql, 'db error', str(e), 'reconnecting...')
                 self.connect()
         if self._engine == mysql and return_dict is True:
             cursor = self.db.cursor(DictCursor)
@@ -358,10 +358,10 @@ class Base(object):
             if self._engine == sqlite:
                 self.commit()
         except Exception as e:
-            print('<--------DBERROR-------->')
-            print(dummy_sql)
-            print('execute fail!', str(e))
-            print('<--------DBERROR-------->')
+            dbg('<--------DBERROR-------->')
+            dbg(dummy_sql)
+            dbg('execute fail!', str(e))
+            dbg('<--------DBERROR-------->')
             results = None
         return results
 
@@ -370,7 +370,7 @@ class Base(object):
 
     def update_last_connect_time(self):
         self.last_connect_time = int(time.time())
-        # print(id(self),'执行',self.executing_query,'更新时间')
+        # dbg(id(self),'执行',self.executing_query,'更新时间')
         return
 
     def update_last_execute_time(self):

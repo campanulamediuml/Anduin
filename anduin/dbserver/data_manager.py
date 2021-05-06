@@ -3,6 +3,7 @@ import os
 import threading
 import time
 # from ..Scheduler import IntervalTask
+from ..Scheduler import dbg
 from ..dbserver.base import Base, ENGINE_DICT, mysql
 
 
@@ -20,20 +21,21 @@ class data_manager(object):
     keep_cycle = 10
 
     def __init__(self, db_config):
+        self.use_cache = False
         self.t_data = db_config
-        self.min_keep_connection = db_config['min_keep_connection'] if 'min_keep_connection' in db_config else 1
         if 'engine' not in self.t_data or self.t_data['engine'] not in ENGINE_DICT:
             self.t_data['engine'] = mysql
         if 'charset' not in self.t_data:
             self.t_data['charset'] = 'utf8mb4'
-
+        if 'cache' in self.t_data:
+            self.use_cache = self.t_data['cache']
         self.threading_pool = {}
         self.threading_out_time_pool = {}
         self.sql_pool = {}
-        print('creating DB connection pool...')
+        dbg('creating DB connection pool...')
         # for i in range(0,self.min_keep_connection):
         self.new()
-        print('connect done!')
+        dbg('connect done!')
         # IntervalTask(data_manager.keep_cycle, self.keep_connect)
         self.mem_cache = {}
 
@@ -49,14 +51,14 @@ class data_manager(object):
         try:
             return self.mem_cache[table][query]
         except Exception as e:
-            print(str(e))
+            dbg(str(e))
             return None
 
     def clean_table(self, table):
         try:
             return self.mem_cache.pop(table) if table in self.mem_cache else None
         except Exception as e:
-            print(str(e))
+            dbg(str(e))
             return None
 
     def find_free_sql(self):
@@ -64,7 +66,7 @@ class data_manager(object):
         mypid = str(os.getpid())
         mytid = str(threading.currentThread().ident)
         thread_id = mypid + '.' + mytid
-        # print('本次数据库请求线程id', thread_id)
+        # dbg('本次数据库请求线程id', thread_id)
         if thread_id in self.threading_pool:
             session_status = self.threading_pool[thread_id]
             if int(time.time()) - session_status[1] < 45:
@@ -77,7 +79,7 @@ class data_manager(object):
         session.become_busy()
         # self.add_new_sql(sql)
         self.threading_pool[thread_id] = (session, int(time.time()))
-        # print('为线程%s更新数据库链接%s'%(thread_id,id(sql)))
+        # dbg('为线程%s更新数据库链接%s'%(thread_id,id(sql)))
         return session
 
     # def add_new_sql(self, sql):
@@ -86,7 +88,7 @@ class data_manager(object):
 
     def new(self):
         sql = self.create_new_sql()
-        # print(id(sql))
+        # dbg(id(sql))
         # self.add_new_sql(sql)
         return sql
 
@@ -100,7 +102,7 @@ class data_manager(object):
     def create(self, table, colums, table_comment='', show_sql=False):
         sql = self.find_free_sql()
         # sql.become_busy()
-        # print('执行这次sql请求的链接是', id(sql))
+        # dbg('执行这次sql请求的链接是', id(sql))
         result = sql.create(table, colums, table_comment, show_sql)
         sql.become_free()
         return result
@@ -109,7 +111,7 @@ class data_manager(object):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
         # sql.become_busy()
-        # print('执行这次sql请求的链接是', id(sql))
+        # dbg('执行这次sql请求的链接是', id(sql))
         result = sql.insert(table, params, show_sql)
         sql.become_free()
         self.clean_table(table)
@@ -130,9 +132,10 @@ class data_manager(object):
         result = sql.find(table, conditions, or_cond, fields, order, show_sql, for_update)
         if result is None:
             return
-        self.mem_cache[table] = {
-            result['query']: result['result']
-        }
+        if self.use_cache is True:
+            self.mem_cache[table] = {
+                result['query']: result['result']
+            }
         sql.become_free()
         return result['result']
 
@@ -141,7 +144,7 @@ class data_manager(object):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
         # sql.become_busy()
-        # print('执行这次sql请求的链接是', id(sql))
+        # dbg('执行这次sql请求的链接是', id(sql))
         if from_cache is True:
             query, params = sql.find_info(table, conditions, or_cond, fields, group, order, limit, for_update)
             query = query % params
@@ -153,9 +156,10 @@ class data_manager(object):
         result = sql.select(table, conditions, or_cond, fields, group, order, limit, show_sql, for_update)
         if result is None:
             return
-        self.mem_cache[table] = {
-            result['query']: result['result']
-        }
+        if self.use_cache is True:
+            self.mem_cache[table] = {
+                result['query']: result['result']
+            }
         sql.become_free()
         return result['result']
 
@@ -163,8 +167,8 @@ class data_manager(object):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
         # sql.become_busy()
-        # print('执行这次sql请求的链接是', id(sql))
-        # print('这次更新的params是',params)
+        # dbg('执行这次sql请求的链接是', id(sql))
+        # dbg('这次更新的params是',params)
         result = sql.update(table, conditions, or_cond, params, show_sql)
         self.clean_table(table)
         sql.become_free()
@@ -174,17 +178,17 @@ class data_manager(object):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
         # sql.become_busy()
-        # print('执行这次sql请求的链接是', id(sql))
+        # dbg('执行这次sql请求的链接是', id(sql))
         result = sql.delete(table, conditions, or_cond, show_sql)
         self.clean_table(table)
         sql.become_free()
         return result
 
     def query(self, sql_query, show_sql=False, return_dict=False):
-        # print(sql)
+        # dbg(sql)
         sql = self.find_free_sql()
         # sql.become_busy()
-        # print('执行这次sql请求的链接是', id(sql))
+        # dbg('执行这次sql请求的链接是', id(sql))
         result = sql.query(sql_query, show_sql, return_dict=return_dict)
         sql.become_free()
         return result
@@ -192,7 +196,7 @@ class data_manager(object):
     def truncate(self, table, show_sql=False):
         sql = self.find_free_sql()
         # sql.become_busy()
-        # print('执行这次sql请求的链接是', id(sql))
+        # dbg('执行这次sql请求的链接是', id(sql))
         result = sql.truncate(table, show_sql)
         sql.become_free()
         return result
