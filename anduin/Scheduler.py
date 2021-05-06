@@ -1,4 +1,5 @@
 import datetime
+import os
 import sys
 import threading
 import time
@@ -16,17 +17,28 @@ def time_to_str(times=time.time()):
     return date_array.strftime("%Y-%m-%d %H:%M:%S")
 
 def get_filename():
-    fn = '.anduin/%s-%s.log'%(sys.argv[0].split('/')[-1],start_time)
+    fn = '%s/.anduin/%s-%s.log'%(os.path.expanduser('~'),sys.argv[0].split('/')[-1],start_time)
     return fn
 
+fn = get_filename()
+if sys.platform != 'win32':
+    try:
+        os.mkdir('%s/.anduin'%os.path.expanduser('~'))
+    except Exception as e:
+        print(str(e))
+    print('anduin调用日志保存在%s'%get_filename())
+else:
+    print('该操作系统为windows系统，暂时无法保存日志')
+    
+fh = open(fn,'a')
 def dbg(*args):
     res = ['[%s]'%time_to_str(int(time.time()))]+list(args)
     print(*res)
-    fh = open(get_filename(),'a')
-    for i in res:
-        fh.write(str(i)+' ')
-    fh.write('\n')
-    fh.close()
+    if sys.platform != 'win32':
+        for i in res:
+            fh.write(str(i)+' ')
+        fh.write('\n')
+        # fh.close()
 
 def IntervalTask(sec, func, params=(), immediatly=True, thread_name=''):
     def run(*func_params):

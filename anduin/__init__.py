@@ -20,14 +20,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE."""
 # <=========>
-import os
 
-from .Scheduler import get_filename
+from .Scheduler import get_filename,dbg
+
+__version__ = "5.0.9"
+
 from .server import *
-__version__ = "5.0.7"
-
-try:
-    os.mkdir('.anduin')
-except Exception as e:
-    pass
-dbg('anduin调用日志保存在%s'%get_filename())
