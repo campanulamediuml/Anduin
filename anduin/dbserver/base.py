@@ -18,6 +18,15 @@ ENGINE_DICT = {
 }
 
 
+def can_return_directly(res):
+    if res is None:
+        return True
+    if res is False:
+        return True
+    if isinstance(res, Exception):
+        return True
+
+
 class Base(object):
     def __init__(self, host, user, psw, dbname, engine, charset):
         self.id = id(self)
@@ -225,8 +234,9 @@ class Base(object):
         sql += " limit 1"
         # self.db.commit()
         res = self.query(sql, show_sql, sql_params, return_dict=True)
-        if res is None:
-            return None
+
+        if can_return_directly(res) is True:
+            return res
 
         if 0 == len(res):
             return None
@@ -258,8 +268,9 @@ class Base(object):
             return
         #
         res = self.query(sql, show_sql, sql_params, return_dict=True)
-        if res is None:
-            return None
+
+        if can_return_directly(res) is True:
+            return res
 
         if 0 == len(res):
             return None
@@ -293,8 +304,8 @@ class Base(object):
         sql = sql[:-1]
         sql += ')'
         #
-        self.query(sql, show_sql, sql_params)
-        return
+        r = self.query(sql, show_sql, sql_params)
+        return r
 
     def update(self, table, conditions, or_cond, params, show_sql=False):
         # dbg('开始执行')
@@ -314,16 +325,16 @@ class Base(object):
             sql_params = []
         sql_params = sql_params_header + sql_params
 
-        self.query(sql, show_sql, sql_params)
+        r = self.query(sql, show_sql, sql_params)
         # dbg('自动提交完毕')
-        return
+        return r
 
     def delete(self, table, condition, or_cond, show_sql=False):
         sql = 'delete from %s where  ' % table
         sql, sql_params = Base.bind_conditions(sql, condition, or_cond)
         #  #
-        self.query(sql, show_sql, sql_params)
-        return
+        r = self.query(sql, show_sql, sql_params)
+        return r
 
     def query(self, sql, show_sql=False, sql_params=None, return_dict=False):
         # for i in danger_sig:
@@ -365,7 +376,7 @@ class Base(object):
             dbg(dummy_sql)
             dbg('execute fail!', str(e))
             dbg('<--------DBERROR-------->')
-            results = False
+            results = e
         return results
 
     def commit(self):

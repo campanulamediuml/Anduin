@@ -4,7 +4,7 @@ import threading
 import time
 # from ..Scheduler import IntervalTask
 from ..Scheduler import dbg
-from ..dbserver.base import Base, ENGINE_DICT, mysql
+from ..dbserver.base import Base, ENGINE_DICT, mysql, can_return_directly
 
 
 # from config.config import db_config
@@ -131,8 +131,8 @@ class data_manager(object):
                 return res
         result = sql.find(table, conditions, or_cond, fields, order, show_sql, for_update)
         sql.become_free()
-        if result is None:
-            return
+        if can_return_directly(result) is True:
+            return result
         if self.use_cache is True:
             self.mem_cache[table] = {
                 result['query']: result['result']
@@ -156,8 +156,8 @@ class data_manager(object):
 
         result = sql.select(table, conditions, or_cond, fields, group, order, limit, show_sql, for_update)
         sql.become_free()
-        if result is None:
-            return
+        if can_return_directly(result) is True:
+            return result
         if self.use_cache is True:
             self.mem_cache[table] = {
                 result['query']: result['result']

@@ -3,7 +3,7 @@ import os
 SETUP_PATH = './setup.py'
 INIT_PATH = './anduin/__init__.py'
 COPY_RIGHT_FILE = './COPYING.txt'
-ANDUIN_VER = '5.0.14'
+ANDUIN_VER = '5.0.15'
 
 def add_copy_right_and_version():
     # pass
