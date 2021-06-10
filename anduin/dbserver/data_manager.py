@@ -130,13 +130,14 @@ class data_manager(object):
                 sql.become_free()
                 return res
         result = sql.find(table, conditions, or_cond, fields, order, show_sql, for_update)
+        sql.become_free()
         if result is None:
             return
         if self.use_cache is True:
             self.mem_cache[table] = {
                 result['query']: result['result']
             }
-        sql.become_free()
+        # sql.become_free()
         return result['result']
 
     def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False,
@@ -154,13 +155,14 @@ class data_manager(object):
                 return res
 
         result = sql.select(table, conditions, or_cond, fields, group, order, limit, show_sql, for_update)
+        sql.become_free()
         if result is None:
             return
         if self.use_cache is True:
             self.mem_cache[table] = {
                 result['query']: result['result']
             }
-        sql.become_free()
+        # sql.become_free()
         return result['result']
 
     def update(self, table, conditions, or_cond, params, show_sql=False):

@@ -51,7 +51,7 @@ class Base(object):
 
     def connect(self):
         if self._engine == mysql:
-            self.db = self.db_engine.connect(self._host, self._user, self._psw, self._dbname, charset=self._charset,
+            self.db = self.db_engine.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname, charset=self._charset,
                                              connect_timeout=60)
             return self.db
         if self._engine == sqlite:
@@ -365,7 +365,7 @@ class Base(object):
             dbg(dummy_sql)
             dbg('execute fail!', str(e))
             dbg('<--------DBERROR-------->')
-            results = None
+            results = False
         return results
 
     def commit(self):
