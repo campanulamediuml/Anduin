@@ -2,7 +2,7 @@ import codecs
 import os
 from setuptools import setup
 
-VER = "5.0.15"
+VER = "6.0.0"
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()

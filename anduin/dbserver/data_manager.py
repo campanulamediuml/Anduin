@@ -1,9 +1,10 @@
 # import asyncio
+import asyncio
 import os
 import threading
 import time
 # from ..Scheduler import IntervalTask
-from ..Scheduler import dbg
+from ..Scheduler import dbg, get_async_result
 from ..dbserver.base import Base, ENGINE_DICT, mysql, can_return_directly
 
 
@@ -129,7 +130,10 @@ class data_manager(object):
             if res is not None:
                 sql.become_free()
                 return res
+
         result = sql.find(table, conditions, or_cond, fields, order, show_sql, for_update)
+         # 获取结果
+        # result = get_async_result(async_r)
         sql.become_free()
         if can_return_directly(result) is True:
             return result
@@ -155,6 +159,10 @@ class data_manager(object):
                 return res
 
         result = sql.select(table, conditions, or_cond, fields, group, order, limit, show_sql, for_update)
+        # async_r = sql.find(table, conditions, or_cond, fields, order, show_sql, for_update)
+        # 获取结果
+        # result = get_async_result(async_r)
+        # sql.become_free()
         sql.become_free()
         if can_return_directly(result) is True:
             return result

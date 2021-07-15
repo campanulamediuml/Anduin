@@ -23,6 +23,7 @@ THE SOFTWARE."""
 
 from .Scheduler import get_filename,dbg
 from .server import *
+from .server_async import *
 
-__version__ = "5.0.15"
+__version__ = "6.0.0"
 

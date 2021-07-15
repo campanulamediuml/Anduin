@@ -8,17 +8,12 @@
 
 import time
 
-from .Scheduler import dbg
+from .Scheduler import dbg, get_db_index
 from .construct_file import frame_constructor
 from .dbserver.base import Base
 from .dbserver.data_manager import data_manager
 
 db_config = None
-
-
-def get_db_index(db_config_dict):
-    return db_config_dict['user'] + '@' + db_config_dict['host'] + ':' + db_config_dict['database']
-
 
 class Data(object):
     Base_pool = {}

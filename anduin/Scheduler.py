@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import os
 import sys
@@ -85,6 +86,22 @@ def func_time(f):
         dbg(info)
         return result
     return wrapper
+
+def get_async_result(async_r):
+    new_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(new_loop)
+    # new_loop.run_forever()
+    get_future = asyncio.ensure_future(async_r)  # 相当于开启一个future
+    new_loop.run_until_complete(get_future)  # 事件循环
+    result = get_future.result()
+
+    return result
+
+
+def get_db_index(db_config_dict):
+    return db_config_dict['user'] + '@' + db_config_dict['host'] + ':' + db_config_dict['database']
+
+
 
 if "__main__" == __name__:
     # res = [(1,2,3),(4,5,6),(7,8,9)]

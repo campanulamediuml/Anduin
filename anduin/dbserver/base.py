@@ -144,6 +144,7 @@ class Base(object):
         if self._engine == sqlite:
             sql = sql.replace('int AUTO_INCREMENT primary key', 'INTEGER PRIMARY KEY AUTOINCREMENT')
         self.query(sql, show_sql)
+        # asyncio.get_event_loop()
         self.commit()
         return
 
