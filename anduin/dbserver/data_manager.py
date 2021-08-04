@@ -83,9 +83,6 @@ class data_manager(object):
         # dbg('为线程%s更新数据库链接%s'%(thread_id,id(sql)))
         return session
 
-    # def add_new_sql(self, sql):
-    #     self.sql_pool[id(sql)] = sql
-    #     return
 
     def new(self):
         sql = self.create_new_sql()
@@ -159,10 +156,6 @@ class data_manager(object):
                 return res
 
         result = sql.select(table, conditions, or_cond, fields, group, order, limit, show_sql, for_update)
-        # async_r = sql.find(table, conditions, or_cond, fields, order, show_sql, for_update)
-        # 获取结果
-        # result = get_async_result(async_r)
-        # sql.become_free()
         sql.become_free()
         if can_return_directly(result) is True:
             return result
@@ -176,9 +169,6 @@ class data_manager(object):
     def update(self, table, conditions, or_cond, params, show_sql=False):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
-        # sql.become_busy()
-        # dbg('执行这次sql请求的链接是', id(sql))
-        # dbg('这次更新的params是',params)
         result = sql.update(table, conditions, or_cond, params, show_sql)
         self.clean_table(table)
         sql.become_free()
@@ -187,8 +177,6 @@ class data_manager(object):
     def delete(self, table, conditions, or_cond, show_sql=False):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
-        # sql.become_busy()
-        # dbg('执行这次sql请求的链接是', id(sql))
         result = sql.delete(table, conditions, or_cond, show_sql)
         self.clean_table(table)
         sql.become_free()
