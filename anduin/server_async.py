@@ -10,30 +10,31 @@ import time
 
 from .Scheduler import dbg, get_db_index, get_async_result
 from .construct_file import frame_constructor
+from .dbserver.async_data_manager import async_data_manager
 from .dbserver.base import Base
-from .dbserver.data_manager import data_manager
+# from .dbserver.data_manager import data_manager
 
 db_config = None
 
 class Data_async(object):
     Base_pool = {}
-    try:
-        exec('from config import db_config')
-        db_config = getattr(db_config, "db_config")
-        # dbg(db_config)
-        if isinstance(db_config, dict):
-            Base = data_manager(db_config)
-            Base_pool['default'] = Base
-            db_index = get_db_index(db_config)
-            Base_pool[db_index] = Base
-        dbg('Auto init success!')
-    except:
-        dbg('Did not find a db config file, need run Data_async.init(db_config) manually...')
+    # try:
+    exec('from config import db_config')
+    db_config = getattr(db_config, "db_config")
+    # dbg(db_config)
+    if isinstance(db_config, dict):
+        Base = async_data_manager(db_config)
+        Base_pool['default'] = Base
+        db_index = get_db_index(db_config)
+        Base_pool[db_index] = Base
+    # dbg('Auto init success!')
+    # except:
+    #     dbg('Did not find a db config file, need run Data_async.init(db_config) manually...')
         # Base = None
 
     @staticmethod
     def init(db_config):
-        Base = data_manager(db_config)
+        Base = async_data_manager(db_config)
         if len(Data_async.Base_pool.keys()) == 0:
             Data_async.Base_pool['default'] = Base
         db_index = get_db_index(db_config)
@@ -113,9 +114,9 @@ class Data_async(object):
              show_manager_id=False, from_cache=False, for_update=False):
         if show_manager_id is True:
             dbg('本次任务通过', base_id, '执行')
-        return Data_async.Base_pool[base_id].find(table, conditions, or_cond, fields, order, show_sql, from_cache,
+        r = await Data_async.Base_pool[base_id].find(table, conditions, or_cond, fields, order, show_sql, from_cache,
                                             for_update) if base_id in Data_async.Base_pool else None
-
+        return r
     # find one line
 
     @staticmethod
@@ -123,9 +124,9 @@ class Data_async(object):
                base_id='default', show_manager_id=False, from_cache=False, for_update=False):
         if show_manager_id is True:
             dbg('本次任务通过', base_id, '执行')
-        return Data_async.Base_pool[base_id].select(table, conditions, or_cond, fields, group, order, limit, show_sql,
+        r = await Data_async.Base_pool[base_id].select(table, conditions, or_cond, fields, group, order, limit, show_sql,
                                               from_cache, for_update) if base_id in Data_async.Base_pool else None
-
+        return r
     # find lines
 
     @staticmethod

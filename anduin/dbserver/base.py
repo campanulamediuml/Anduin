@@ -2,9 +2,9 @@ import time
 import pymysql
 import sqlite3
 
-
 from pymysql.cursors import DictCursor
 
+from .base_method import base_method
 from ..Scheduler import dbg
 
 mysql = 'mysql'
@@ -27,7 +27,7 @@ def can_return_directly(res):
         return True
 
 
-class Base(object):
+class Base(base_method):
     def __init__(self, host, user, psw, dbname, engine, charset):
         self.id = id(self)
         self._host = host
@@ -148,76 +148,6 @@ class Base(object):
         self.commit()
         return
 
-    @staticmethod
-    def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None, for_update=False):
-
-        if fields is None:
-            return
-
-        sql = 'select %s from %s where  ' % (','.join(fields), table)
-        # dbg(sql)
-        sql, sql_params = Base.bind_conditions(sql, conditions, or_cond)
-
-        if group is not None:
-            sql += 'group by '
-            for i in group:
-                sql += '%s ,' % i
-            sql = sql[:-1]
-
-        if order is not None:
-            sql += 'order by '
-            count = 0
-            for i in order:
-                if count % 2 == 0:
-                    sql += '%s ' % i
-                else:
-                    sql += '%s ,' % i
-                count += 1
-            sql = sql[:-1]
-
-        if limit is not None:
-            sql += 'limit '
-            for i in limit:
-                sql += '%s, ' % i
-            sql = sql[:-2]
-
-        if for_update is True:
-            sql += ' for update'
-        return sql, sql_params
-
-    @staticmethod
-    def bind_conditions(sql, conditions, or_cond):
-        sql_params = []
-        if conditions is None:
-            conditions = []
-        if or_cond is None:
-            or_cond = []
-        if len(or_cond) + len(conditions) == 0:
-            return sql[:-7], None
-
-        if len(conditions) > 0:
-            for unit in conditions:
-                value = unit[2]
-                sql = sql + " %s %s binary " % (unit[0], unit[1]) + '%s'
-                sql_params += [value]
-                sql += "  and "
-                if 'in' in unit[1]:
-                    sql = sql.replace('binary', '')
-            sql = sql[:-4]
-            if len(or_cond) > 0:
-                sql += ' or '
-
-        if len(or_cond) > 0:
-            for unit in or_cond:
-                value = unit[2]
-                sql = sql + " %s %s binary " % (unit[0], unit[1]) + '%s'
-                sql_params += [value]
-                sql += "  or "
-                if 'in' in unit[1]:
-                    sql = sql.replace('binary', '')
-            sql = sql[:-3]
-
-        return sql, sql_params
 
     # 查找数据（单条）
     def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False, for_update=False):
@@ -395,7 +325,7 @@ class Base(object):
     def get_last_connect_time(self):
         return self.last_connect_time
 
-    def truncate(self, table, show_sql=False):
+    async def truncate(self, table, show_sql=False):
         sql = 'TRUNCATE TABLE %s' % table
         self.query(sql, show_sql)
         return

@@ -25,5 +25,5 @@ from .Scheduler import get_filename,dbg
 from .server import *
 from .server_async import *
 
-__version__ = "6.0.1"
+__version__ = "7.0.17"
 

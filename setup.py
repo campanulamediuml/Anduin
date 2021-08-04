@@ -2,7 +2,7 @@ import codecs
 import os
 from setuptools import setup
 
-VER = "6.0.1"
+VER = "7.0.17"
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -31,7 +31,8 @@ if __name__ == '__main__':
         ],
         url='https://github.com/campanulamediuml/Anduin',
         install_requires=[
-            'pymysql>=0.10.1',
+            'PyMySQL<=0.9.3,>=0.9',
+            'aiomysql==0.0.21'
         ],
         include_package_data=True,
         zip_safe=True,
