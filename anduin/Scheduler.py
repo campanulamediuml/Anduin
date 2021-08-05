@@ -99,7 +99,7 @@ def create_async_event(async_r):
 
 def get_async_result(async_r):
     loop = asyncio.get_event_loop()
-    task = loop.create_task(async_r)
+    loop.create_task(async_r)
     # loop.run_until_complete(task)
     # return task.result
 
