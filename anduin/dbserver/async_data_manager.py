@@ -1,7 +1,7 @@
 # import asyncio
 import time
 # from ..Scheduler import IntervalTask
-from ..Scheduler import dbg
+from ..Scheduler import dbg, sql_clean_time
 from ..dbserver.asyncio_base import Base, ENGINE_DICT, mysql, can_return_directly
 
 
@@ -57,7 +57,7 @@ class async_data_manager(object):
         need_kill_session = []
         for thread_id in range(0, len(self.threading_pool)):
             session_status = self.threading_pool[thread_id]
-            if int(time.time()) - session_status[1] < 45:
+            if int(time.time()) - session_status[1] < sql_clean_time:
                 session = session_status[0]
                 if session._is_busy != 1:
                     session.become_busy()

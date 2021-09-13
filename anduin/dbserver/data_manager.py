@@ -4,7 +4,7 @@ import os
 import threading
 import time
 # from ..Scheduler import IntervalTask
-from ..Scheduler import dbg
+from ..Scheduler import dbg, sql_clean_time
 from ..dbserver.base import Base, ENGINE_DICT, mysql, can_return_directly
 
 
@@ -70,7 +70,7 @@ class data_manager(object):
         # dbg('本次数据库请求线程id', thread_id)
         if thread_id in self.threading_pool:
             session_status = self.threading_pool[thread_id]
-            if int(time.time()) - session_status[1] < 45:
+            if int(time.time()) - session_status[1] < sql_clean_time:
                 session = session_status[0]
                 session.become_busy()
                 self.threading_pool[thread_id] = (session, int(time.time()))

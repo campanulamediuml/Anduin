@@ -8,7 +8,7 @@
 
 import time
 
-from .Scheduler import dbg, get_db_index, get_async_result
+from .Scheduler import dbg, get_db_index, get_async_result, sql_clean_time
 from .construct_file import frame_constructor
 from .dbserver.async_data_manager import async_data_manager
 from .dbserver.base import Base
@@ -47,14 +47,14 @@ class Data_async(object):
             dbg('本次任务通过', base_id, '执行')
         if base_id not in Data_async.Base_pool:
             return
-        sql_pool = list(Data_async.Base_pool[base_id].threading_pool.values())
+        sql_pool = Data_async.Base_pool[base_id].threading_pool
         busy_list = []
         all_list = []
         free_list = []
         sql_executing = {}
         now_time = int(time.time())
         for sql_status in sql_pool:
-            if now_time - sql_status[1] > 45:
+            if now_time - sql_status[1] > sql_clean_time:
                 continue
             sql = sql_status[0]
             sql_id = id(sql)
@@ -142,81 +142,41 @@ class Data_async(object):
     # Don't use this
 
     @staticmethod
-    def update(table, conditions, params=None, or_cond=None, show_sql=False, base_id='default', show_manager_id=False):
+    async def update(table, conditions, params=None, or_cond=None, show_sql=False, base_id='default', show_manager_id=False):
         if show_manager_id is True:
             dbg('本次任务通过', base_id, '执行')
         # dbg(params)
-        Data_async.Base_pool[base_id].update(table, conditions, or_cond, params,
+        await Data_async.Base_pool[base_id].update(table, conditions, or_cond, params,
                                        show_sql) if base_id in Data_async.Base_pool else None
         return
 
     # update data
 
     @staticmethod
-    def delete(table, conditions, or_cond=None, show_sql=False, base_id='default', show_manager_id=False):
+    async def delete(table, conditions, or_cond=None, show_sql=False, base_id='default', show_manager_id=False):
         if show_manager_id is True:
             dbg('本次任务通过', base_id, '执行')
-        data = Data_async.Base_pool[base_id].delete(table, conditions, or_cond,
+        data = await Data_async.Base_pool[base_id].delete(table, conditions, or_cond,
                                               show_sql) if base_id in Data_async.Base_pool else None
         return data
 
     # delete data
 
     @staticmethod
-    def truncate(table, show_sql=False, base_id='default', show_manager_id=False):
+    async def truncate(table, show_sql=False, base_id='default', show_manager_id=False):
         if show_manager_id is True:
             dbg('本次任务通过', base_id, '执行')
-        return Data_async.Base_pool[base_id].truncate(table, show_sql) if base_id in Data_async.Base_pool else None
+        return await Data_async.Base_pool[base_id].truncate(table, show_sql) if base_id in Data_async.Base_pool else None
 
     # truncate table
 
     @staticmethod
-    def query(sql, show_sql=False, base_id='default', show_manager_id=False, return_dict=False):
+    async def query(sql, show_sql=False, base_id='default', show_manager_id=False, return_dict=False):
         if show_manager_id is True:
             dbg('本次任务通过', base_id, '执行')
-        return Data_async.Base_pool[base_id].query(sql, show_sql, return_dict) if base_id in Data_async.Base_pool else None
+        return await Data_async.Base_pool[base_id].query(sql, show_sql, return_dict) if base_id in Data_async.Base_pool else None
 
     # execute sql query
-
-    @staticmethod
-    def get_cache(table, safe=True):
-        if safe:
-            pass
-        res = {}
-        all_data = Data_async.select(table, [])
-        for i in all_data:
-            res[i['id']] = i
-        return res
-
-    # get data from buffer-cacher-info
-
-    @staticmethod
-    def map_all_db(base_id='default', show_manager_id=False, file_path='', file_name='db_frame.py'):
-        try:
-            if show_manager_id is True:
-                dbg('本次任务通过', base_id, '执行')
-            if base_id not in Data_async.Base_pool:
-                dbg('base id not exist.. construct fail')
-                return
-            base_manager = Data_async.Base_pool[base_id]
-            db_name = base_manager.t_data['database']
-            all_table = Data_async.query('show tables', base_id=base_id)
-            table_index = {}
-            for i in all_table:
-                table_name = i[0]
-                table_info = Data_async.find('information_schema.tables',
-                                       [('table_schema', '=', db_name), ('table_name', '=', table_name)],
-                                       fields=('table_name', 'table_comment'))
-                res = Data_async.query('show full columns from ' + str(table_name), base_id=base_id)
-                table_index[table_name] = list(res)
-                table_index[table_name].append(table_info)
-            # pdbg(table_index)
-            constructor = frame_constructor(db_name, table_index, file_path, file_name)
-            constructor.dump()
-            dbg('create file success in %s' % file_path + file_name)
-            return table_index
-        except Exception as e:
-            dbg(str(e))
 
     # dump database as an Anduin-data-frame
 

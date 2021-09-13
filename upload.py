@@ -1,9 +1,14 @@
 import os
+import time
+
+from anduin.Scheduler import time_to_str
 
 SETUP_PATH = './setup.py'
 INIT_PATH = './anduin/__init__.py'
 COPY_RIGHT_FILE = './COPYING.txt'
-ANDUIN_VER = '6.0.1'
+ANDUIN_VER = '7.0.20'
+# 6.x :正式版
+# 7.x :异步框架测试
 
 def add_copy_right_and_version():
     # pass
@@ -49,6 +54,7 @@ def packageandupload():
     print('上传中...')
     query = 'python -m twine upload --repository pypi dist/*'
     os.system(query)
+    print(time_to_str(int(time.time())),'更新版本 v%s'%ANDUIN_VER)
 
 
 if __name__ == "__main__":

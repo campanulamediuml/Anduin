@@ -10,6 +10,7 @@ from functools import wraps
 
 TIME_ACCURACY = 1  # 时间精度，时间精度不是越小越好！你的Task每次循环超过了这个值,将影响准确度
 start_time = int(time.time())
+sql_clean_time = 45
 
 def time_to_str(times=time.time()):
     if times == 0:
@@ -28,12 +29,12 @@ if sys.platform != 'win32':
     except Exception as e:
         print(str(e))
     print('anduin调用日志保存在%s'%get_filename())
+    fh = open(fn, 'a')
 else:
     print('该操作系统为windows系统，暂时无法保存日志')
-    
-fh = open(fn,'a')
+    fh = None
 def dbg(*args):
-    res = ['[%s]'%time_to_str(int(time.time()))]+list(args)
+    res = ['[%s Anduin Engine]'%time_to_str(int(time.time()))]+list(args)
     print(*res)
     if sys.platform != 'win32':
         for i in res:
