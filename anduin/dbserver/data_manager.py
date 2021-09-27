@@ -72,9 +72,10 @@ class data_manager(object):
             session_status = self.threading_pool[thread_id]
             if int(time.time()) - session_status[1] < sql_clean_time:
                 session = session_status[0]
-                session.become_busy()
-                self.threading_pool[thread_id] = (session, int(time.time()))
-                return session
+                if session._is_busy != 1:
+                    session.become_busy()
+                    self.threading_pool[thread_id] = (session, int(time.time()))
+                    return session
 
         session = self.create_new_sql()
         session.become_busy()
@@ -115,7 +116,7 @@ class data_manager(object):
         self.clean_table(table)
         return result
 
-    def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False, from_cache=False,
+    def find(self, table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False, from_cache=False,
              for_update=False):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
@@ -141,7 +142,7 @@ class data_manager(object):
         # sql.become_free()
         return result['result']
 
-    def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False,
+    def select(self, table, conditions, or_cond=None, fields=('*',), group=None, order=None, limit=None, show_sql=False,
                from_cache=False, for_update=False):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
@@ -166,7 +167,7 @@ class data_manager(object):
         # sql.become_free()
         return result['result']
 
-    def update(self, table, conditions, or_cond, params, show_sql=False):
+    def update(self, table, conditions, or_cond=None, params=None, show_sql=False):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
         result = sql.update(table, conditions, or_cond, params, show_sql)
@@ -174,7 +175,7 @@ class data_manager(object):
         sql.become_free()
         return result
 
-    def delete(self, table, conditions, or_cond, show_sql=False):
+    def delete(self, table, conditions, or_cond=None, show_sql=False):
         sql = self.find_free_sql()
         table = self.get_table_name(table)
         result = sql.delete(table, conditions, or_cond, show_sql)

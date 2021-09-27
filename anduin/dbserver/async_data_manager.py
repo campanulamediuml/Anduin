@@ -109,7 +109,7 @@ class async_data_manager(object):
         self.clean_table(table)
         return result
 
-    async def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False, from_cache=False,
+    async def find(self, table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False, from_cache=False,
              for_update=False):
         sql = await self.find_free_sql()
         table = self.get_table_name(table)
@@ -135,7 +135,7 @@ class async_data_manager(object):
         # await sql.become_free()
         return result['result']
 
-    async def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False,
+    async def select(self, table, conditions, or_cond=None, fields=('*',), group=None, order=None, limit=None, show_sql=False,
                from_cache=False, for_update=False):
         print('开始查询')
         sql = await self.find_free_sql()
@@ -161,7 +161,7 @@ class async_data_manager(object):
         # await sql.become_free()
         return result['result']
 
-    async def update(self, table, conditions, or_cond, params, show_sql=False):
+    async def update(self, table, conditions, or_cond=None, params=None, show_sql=False):
         sql = await self.find_free_sql()
         table = self.get_table_name(table)
         result = await sql.update(table, conditions, or_cond, params, show_sql)
@@ -169,7 +169,7 @@ class async_data_manager(object):
         await sql.become_free()
         return result
 
-    async def delete(self, table, conditions, or_cond, show_sql=False):
+    async def delete(self, table, conditions, or_cond=None, show_sql=False):
         sql = await self.find_free_sql()
         table = self.get_table_name(table)
         result = await sql.delete(table, conditions, or_cond, show_sql)

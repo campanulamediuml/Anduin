@@ -148,7 +148,7 @@ class Base(base_method):
 
 
     # 查找数据（单条）
-    async def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False, for_update=False):
+    async def find(self, table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False, for_update=False):
         if table not in self._tables:
             await self.load_an_table(table)
 
@@ -183,7 +183,7 @@ class Base(base_method):
         return result
 
     # 查找数据
-    async def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False,
+    async def select(self, table, conditions, or_cond=None, fields=('*',), group=None, order=None, limit=None, show_sql=False,
                for_update=False):
         if table not in self._tables:
             await self.load_an_table(table)
@@ -235,7 +235,7 @@ class Base(base_method):
         r = await self.query(sql, show_sql, sql_params)
         return r
 
-    async def update(self, table, conditions, or_cond, params, show_sql=False):
+    async def update(self, table, conditions, or_cond=None, params=None, show_sql=False):
         # dbg('开始执行')
         if params == {} or params is None:
             # dbg('没有params，结束执行')
@@ -257,7 +257,7 @@ class Base(base_method):
         # dbg('自动提交完毕')
         return r
 
-    async def delete(self, table, condition, or_cond, show_sql=False):
+    async def delete(self, table, condition, or_cond=None, show_sql=False):
         sql = 'delete from %s where  ' % table
         sql, sql_params = Base.bind_conditions(sql, condition, or_cond)
         #  #

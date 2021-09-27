@@ -150,7 +150,7 @@ class Base(base_method):
 
 
     # 查找数据（单条）
-    def find(self, table, conditions, or_cond, fields=('*',), order=None, show_sql=False, for_update=False):
+    def find(self, table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False, for_update=False):
         if table not in self._tables:
             self.load_an_table(table)
 
@@ -185,7 +185,7 @@ class Base(base_method):
         return result
 
     # 查找数据
-    def select(self, table, conditions, or_cond, fields=('*',), group=None, order=None, limit=None, show_sql=False,
+    def select(self, table, conditions, or_cond=None, fields=('*',), group=None, order=None, limit=None, show_sql=False,
                for_update=False):
         if table not in self._tables:
             self.load_an_table(table)
@@ -238,7 +238,7 @@ class Base(base_method):
         r = self.query(sql, show_sql, sql_params)
         return r
 
-    def update(self, table, conditions, or_cond, params, show_sql=False):
+    def update(self, table, conditions, or_cond=None, params=None, show_sql=False):
         # dbg('开始执行')
         if params == {} or params is None:
             # dbg('没有params，结束执行')
@@ -260,7 +260,7 @@ class Base(base_method):
         # dbg('自动提交完毕')
         return r
 
-    def delete(self, table, condition, or_cond, show_sql=False):
+    def delete(self, table, condition, or_cond=None, show_sql=False):
         sql = 'delete from %s where  ' % table
         sql, sql_params = Base.bind_conditions(sql, condition, or_cond)
         #  #
