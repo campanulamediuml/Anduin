@@ -27,8 +27,9 @@ class Data(object):
             db_index = get_db_index(db_config)
             Base_pool[db_index] = Base
         dbg('Auto init success!')
-    except:
-        dbg('Did not find a db config file, need run Data.init(db_config) manually...')
+    except Exception as e:
+        dbg(str(e))
+        dbg('Did not find a db config file, need run Data.init(db_config) manually...[from normal_connect]')
         # Base = None
 
     @staticmethod

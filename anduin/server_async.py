@@ -18,18 +18,18 @@ db_config = None
 
 class Data_async(object):
     Base_pool = {}
-    # try:
-    exec('from config import db_config')
-    db_config = getattr(db_config, "db_config")
-    # dbg(db_config)
-    if isinstance(db_config, dict):
-        Base = async_data_manager(db_config)
-        Base_pool['default'] = Base
-        db_index = get_db_index(db_config)
-        Base_pool[db_index] = Base
-    # dbg('Auto init success!')
-    # except:
-    #     dbg('Did not find a db config file, need run Data_async.init(db_config) manually...')
+    try:
+        exec('from config import db_config')
+        db_config = getattr(db_config, "db_config")
+        if isinstance(db_config, dict):
+            Base = async_data_manager(db_config)
+            Base_pool['default'] = Base
+            db_index = get_db_index(db_config)
+            Base_pool[db_index] = Base
+        # dbg('Auto init success!')
+    except:
+        pass
+        # dbg('Did not find a db config file, need run Data_async.init(db_config) manually...[from async connect]')
         # Base = None
 
     @staticmethod
