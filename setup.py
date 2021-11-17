@@ -2,7 +2,7 @@ import codecs
 import os
 from setuptools import setup
 
-VER = "7.0.28"
+VER = "7.0.29"
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()

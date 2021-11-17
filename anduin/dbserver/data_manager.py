@@ -42,6 +42,8 @@ class data_manager(object):
 
     # 拼接'库.表'结构
     def get_table_name(self, table_name):
+        if self.t_data['engine'] != 'mysql':
+            return table_name
         if '.' in table_name:
             return table_name
         else:

@@ -6,7 +6,7 @@ from anduin.Scheduler import time_to_str
 SETUP_PATH = './setup.py'
 INIT_PATH = './anduin/__init__.py'
 COPY_RIGHT_FILE = './COPYING.txt'
-ANDUIN_VER = '7.0.28'
+ANDUIN_VER = '7.0.29'
 # 6.x :正式版
 # 7.x :异步框架测试
 
@@ -39,7 +39,7 @@ def add_copy_right_and_version():
 def clean_package():
     print('清理打包缓存')
     try:
-        query = 'delete dist/*'
+        query ='rm dist/*'
         os.system(query)
     except Exception as e:
         print(str(e))
