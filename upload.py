@@ -1,12 +1,12 @@
 import os
 import time
 
-from anduin.Scheduler import time_to_str
+from anduin.common.tools import time_to_str
 
 SETUP_PATH = './setup.py'
 INIT_PATH = './anduin/__init__.py'
 COPY_RIGHT_FILE = './COPYING.txt'
-ANDUIN_VER = '7.0.29'
+ANDUIN_VER = '7.1.1'
 # 6.x :正式版
 # 7.x :异步框架测试
 

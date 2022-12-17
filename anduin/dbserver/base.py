@@ -1,33 +1,16 @@
 import time
+from typing import Iterable
+
 import pymysql
 import sqlite3
 
 from pymysql.cursors import DictCursor
 
-from .base_method import base_method
-from ..Scheduler import dbg
-
-mysql = 'mysql'
-sqlite = 'sqlite'
-
-danger_sig = ['--', '-+', '#']
-
-ENGINE_DICT = {
-    'mysql': pymysql,
-    'sqlite': sqlite3
-}
+from ..parser.parser import sql_parser
+from ..common.tools import dbg, ENGINE_MYSQL, ENGINE_SQLITE, ENGINE_DICT, can_return_directly
 
 
-def can_return_directly(res):
-    if res is None:
-        return True
-    if res is False:
-        return True
-    if isinstance(res, Exception):
-        return True
-
-
-class Base(base_method):
+class Base(sql_parser):
     def __init__(self, host, user, psw, dbname, engine, charset):
         self.id = id(self)
         self._host = host
@@ -52,18 +35,18 @@ class Base(base_method):
     def connect_db(self):
         try:
             self.db = self.connect()
-            if self._engine != sqlite:
+            if self._engine != ENGINE_SQLITE:
                 self._load_tables()
         except Exception as e:
             dbg('connect fail', str(e))
             pass
 
     def connect(self):
-        if self._engine == mysql:
+        if self._engine == ENGINE_MYSQL:
             self.db = self.db_engine.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname, charset=self._charset,
                                              connect_timeout=60)
             return self.db
-        if self._engine == sqlite:
+        if self._engine == ENGINE_SQLITE:
             self.db = self.db_engine.connect(self._dbname)
             return self.db
 
@@ -91,22 +74,23 @@ class Base(base_method):
     def keep_connect(self):
         if self.db is None:
             self.connect_db()
-        if self._engine != sqlite:
+        if self._engine !=ENGINE_SQLITE:
             self.query('select 1')
 
     def load_an_table(self, table):
-        if self._engine == sqlite:
+        if self._engine ==ENGINE_SQLITE:
             sql = 'PRAGMA table_info(%s)' % table
         else:
             sql = 'show fields from ' + table
         res = self.query(sql, show_sql=False)
         if res is None:
             return
-        column_list = list(map(lambda x: x[0], res))
-        if 'signal' in column_list:
-            column_list.remove('signal')
-        self._tables[table] = column_list
-        return column_list
+        if isinstance(res,Iterable):
+            column_list = list(map(lambda x: x[0], res))
+            if 'signal' in column_list:
+                column_list.remove('signal')
+            self._tables[table] = column_list
+            return column_list
 
     # 加载所有数据库表名
     def _load_tables(self, show_sql=False):
@@ -122,27 +106,8 @@ class Base(base_method):
     def _load_all_fileds(self):
         pass
 
-    def create(self, table, colums, table_comment='', show_sql=False):
-        sql = 'create table %s(' % table
-
-        tail = ''
-
-        for item in colums:
-            col = ''
-            if self._engine == sqlite:
-                item = item[:-1]
-            for i in item:
-                col += str(i)
-                col += ' '
-            col += ','
-            tail += col
-
-        tail = tail[:-1] + ')'
-        sql += tail
-        if self._engine == mysql:
-            sql += 'charset=utf8mb4,engine=innodb,comment="%s"' % table_comment
-        if self._engine == sqlite:
-            sql = sql.replace('int AUTO_INCREMENT primary key', 'INTEGER PRIMARY KEY AUTOINCREMENT')
+    def create(self, table, columns, table_comment='', show_sql=False):
+        sql = Base.create_table_parser(table, columns, table_comment, sql_engine=ENGINE_MYSQL)
         self.query(sql, show_sql)
         # asyncio.get_event_loop()
         self.commit()
@@ -158,7 +123,7 @@ class Base(base_method):
             fieldList = self._tables[table]
             fields = fieldList
 
-        sql, sql_params = self.find_info(table, conditions, or_cond, fields, None, order, None, for_update)
+        sql, sql_params = Base.find_info(table, conditions, or_cond, fields, None, order, None, for_update)
         if sql is None:
             return
 
@@ -172,7 +137,7 @@ class Base(base_method):
         if 0 == len(res):
             return None
 
-        if self._engine == sqlite:
+        if self._engine ==ENGINE_SQLITE:
             result = dict(zip(fields, res[0]))
         else:
             result = res[0]
@@ -190,11 +155,7 @@ class Base(base_method):
         if table not in self._tables:
             self.load_an_table(table)
 
-        if fields[0] == '*' and len(fields) == 1:
-            fieldList = self._tables[table]
-            fields = fieldList
-
-        sql, sql_params = self.find_info(table, conditions, or_cond, fields, group, order, limit, for_update)
+        sql, sql_params = Base.find_info(table, conditions, or_cond, fields, group, order, limit, for_update)
         if sql is None:
             return
         #
@@ -207,7 +168,7 @@ class Base(base_method):
             return None
 
         result = []
-        if self._engine == sqlite:
+        if self._engine ==ENGINE_SQLITE:
             for data in res:
                 data = dict(zip(fields, data))
                 result.append(data)
@@ -221,41 +182,13 @@ class Base(base_method):
         return res
 
     def insert(self, table, content, show_sql=False):
-        params = content
-        keys = str(tuple(params.keys()))
-        keys = keys.replace("'", "")
-        if 1 == len(params):
-            keys = keys[:-2] + ")"
-        sql_params = []
-        sql = 'insert into %s%s values (' % (table, keys)
-        for i in params.values():
-            sql_params.append(i)
-        for _ in params.values():
-            sql += '%s,'
-        sql = sql[:-1]
-        sql += ')'
-        #
+        sql,sql_params = Base.insert_parser(table,content)
         r = self.query(sql, show_sql, sql_params)
         return r
 
     def update(self, table, conditions, or_cond=None, params=None, show_sql=False):
         # dbg('开始执行')
-        if params == {} or params is None:
-            # dbg('没有params，结束执行')
-            return
-        sql = 'update %s set ' % table
-        sql_params_header = []
-        for param, value in params.items():
-            sql = sql + " %s = " % param + '%s,'
-            sql_params_header += [value]
-
-        sql = sql[:-1] + ' where  '
-        sql, sql_params = Base.bind_conditions(sql, conditions, or_cond)
-        # dbg(sql)
-        if sql_params is None:
-            sql_params = []
-        sql_params = sql_params_header + sql_params
-
+        sql,sql_params = Base.update_parser(table,conditions,or_cond,params)
         r = self.query(sql, show_sql, sql_params)
         # dbg('自动提交完毕')
         return r
@@ -272,7 +205,7 @@ class Base(base_method):
         #     if i in sql:
         #         return None
         dummy_sql = sql % tuple(sql_params) if sql_params is not None else sql
-        if self._engine == sqlite:
+        if self._engine == ENGINE_SQLITE:
             sql = sql.replace('binary', '')
             sql = sql.replace('%s', '?')
         self.executing_query = dummy_sql
@@ -280,13 +213,13 @@ class Base(base_method):
             show_sql = False
         if show_sql is True:
             dbg('sql_id', id(self), dummy_sql)
-        if self._engine != sqlite:
+        if self._engine != ENGINE_SQLITE:
             try:
                 self.db.ping(reconnect=True)
             except Exception as e:
                 dbg(dummy_sql, 'db error', str(e), 'reconnecting...')
                 self.connect()
-        if self._engine == mysql and return_dict is True:
+        if self._engine == ENGINE_MYSQL and return_dict is True:
             cursor = self.db.cursor(DictCursor)
         else:
             cursor = self.db.cursor()
@@ -300,7 +233,7 @@ class Base(base_method):
             else:
                 cursor.execute(sql)
             results = cursor.fetchall()
-            if self._engine == sqlite:
+            if self._engine == ENGINE_SQLITE:
                 self.commit()
         except Exception as e:
             dbg('<--------DBERROR-------->')

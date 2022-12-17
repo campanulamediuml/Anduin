@@ -8,7 +8,7 @@
 
 import time
 
-from .Scheduler import dbg, get_db_index
+from .common.tools import get_db_index, dbg
 from .construct_file import frame_constructor
 from .dbserver.base import Base
 from .dbserver.data_manager import data_manager
@@ -216,7 +216,6 @@ class Data(object):
             return table_index
         except Exception as e:
             dbg(str(e))
-
     # dump database as an Anduin-data-frame
 
     @staticmethod

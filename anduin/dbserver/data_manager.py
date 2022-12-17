@@ -1,11 +1,9 @@
-# import asyncio
-import asyncio
 import os
 import threading
 import time
-# from ..Scheduler import IntervalTask
-from ..Scheduler import dbg, sql_clean_time
-from ..dbserver.base import Base, ENGINE_DICT, mysql, can_return_directly
+
+from ..common.tools import dbg, ENGINE_DICT, ENGINE_MYSQL, can_return_directly, sql_clean_time
+from ..dbserver.base import Base
 
 
 # from config.config import db_config
@@ -25,7 +23,7 @@ class data_manager(object):
         self.use_cache = False
         self.t_data = db_config
         if 'engine' not in self.t_data or self.t_data['engine'] not in ENGINE_DICT:
-            self.t_data['engine'] = mysql
+            self.t_data['engine'] = ENGINE_MYSQL
         if 'charset' not in self.t_data:
             self.t_data['charset'] = 'utf8mb4'
         if 'cache' in self.t_data:
