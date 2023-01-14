@@ -1,9 +1,6 @@
 import time
 from typing import Iterable
 
-import pymysql
-import sqlite3
-
 from pymysql.cursors import DictCursor
 
 from ..parser.parser import sql_parser

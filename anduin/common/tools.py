@@ -16,6 +16,7 @@ ENGINE_DICT = {
     ENGINE_SQLITE:sqlite3
 }
 sql_clean_time = 45
+LOG_PATH = '%s/.anduin/'%os.path.expanduser('~')
 
 def time_to_str(times):
     date_array = datetime.datetime.utcfromtimestamp(times + (8 * 3600))
@@ -23,7 +24,7 @@ def time_to_str(times):
 
 def get_filename():
     # if sys.platform != 'win32':
-    fn = '%s/.anduin/%s-%s.log'%(os.path.expanduser('~'),sys.argv[0].split('/')[-1],start_time)
+    fn = '%s%s-%s.log'%(LOG_PATH,sys.argv[0].split('/')[-1],start_time)
     # else:
     #     fn = '%s\\.anduin\\%s-%s.log'%(os.path.expanduser('~'),sys.argv[0].split('\\')[-1],start_time)
     return fn
@@ -75,3 +76,8 @@ def can_return_directly(res):
         return True
     if isinstance(res, Exception):
         return True
+
+def clean_old_log(filename='*.log'):
+    if sys.platform != 'win32':
+        os.system('rm %s%s'%(LOG_PATH,filename))
+

@@ -24,6 +24,7 @@ class sql_parser(object):
         if sql_engine ==ENGINE_SQLITE:
             sql = sql.replace('int AUTO_INCREMENT primary key', 'INTEGER PRIMARY KEY AUTOINCREMENT')
         return sql
+    # 拼接create sql
 
     @staticmethod
     def insert_parser(table,content):
@@ -41,6 +42,7 @@ class sql_parser(object):
         sql = sql[:-1]
         sql += ')'
         return sql,sql_params
+    # insert规则拼接
 
     @staticmethod
     def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None, for_update=False):
@@ -76,6 +78,7 @@ class sql_parser(object):
         if for_update is True:
             sql += ' for update'
         return sql, sql_params
+    # select 规则拼接
 
     @staticmethod
     def bind_conditions(sql, conditions, or_cond):
@@ -130,3 +133,6 @@ class sql_parser(object):
         sql_params = sql_params_header + sql_params
         return sql,sql_params
 
+if __name__ == '__main__':
+    sql = sql_parser.update_parser('test',[('id','=',1)],[],{'username':'user','k_2':22})
+    print(sql)
