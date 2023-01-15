@@ -2,7 +2,7 @@ import codecs
 import os
 from setuptools import setup
 
-VER = "7.1.5"
+VER = "7.1.6"
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -14,7 +14,7 @@ if __name__ == '__main__':
         version=VER,  # 当前版本
         description='a lite mysql & sqlite3 connect engine, mapping table into k-v structure',  # 简短描述
         license='MIT',
-        long_description=read("README.rst"),
+        long_description=read("README.md"),
         author='campanula',
         author_email='campanulamediuml@gmail.com',
         platforms='any',
