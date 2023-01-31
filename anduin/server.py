@@ -95,6 +95,7 @@ class Data(object):
     def create(table, colums, comment='', show_sql=False, base_id='default', show_manager_id=False):
         if show_manager_id is True:
             dbg('本次任务通过', base_id, '执行')
+        Data.Base_pool[base_id].commit()
         return Data.Base_pool[base_id].create(table, colums, comment, show_sql) if base_id in Data.Base_pool else None
 
     # create table
@@ -105,6 +106,7 @@ class Data(object):
             dbg('本次任务通过', base_id, '执行')
 
         data = Data.Base_pool[base_id].insert(table, params, show_sql) if base_id in Data.Base_pool else None
+        Data.Base_pool[base_id].commit()
         return data
 
     # insert data
@@ -147,6 +149,7 @@ class Data(object):
         # dbg(params)
         Data.Base_pool[base_id].update(table, conditions, or_cond, params,
                                        show_sql) if base_id in Data.Base_pool else None
+        Data.Base_pool[base_id].commit()
         return
 
     # update data
@@ -157,6 +160,7 @@ class Data(object):
             dbg('本次任务通过', base_id, '执行')
         data = Data.Base_pool[base_id].delete(table, conditions, or_cond,
                                               show_sql) if base_id in Data.Base_pool else None
+        Data.Base_pool[base_id].commit()
         return data
 
     # delete data
@@ -173,7 +177,9 @@ class Data(object):
     def query(sql, show_sql=False, base_id='default', show_manager_id=False, return_dict=False):
         if show_manager_id is True:
             dbg('本次任务通过', base_id, '执行')
-        return Data.Base_pool[base_id].query(sql, show_sql, return_dict) if base_id in Data.Base_pool else None
+        r = Data.Base_pool[base_id].query(sql, show_sql, return_dict) if base_id in Data.Base_pool else None
+        Data.Base_pool[base_id].commit()
+        return r
 
     # execute sql query
 

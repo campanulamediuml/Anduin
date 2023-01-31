@@ -230,8 +230,8 @@ class Base(sql_parser):
             else:
                 cursor.execute(sql)
             results = cursor.fetchall()
-            if self._engine == ENGINE_SQLITE:
-                self.commit()
+            # if self._engine == ENGINE_SQLITE:
+            #     self.commit()
         except Exception as e:
             dbg('<--------DBERROR-------->')
             dbg(dummy_sql)

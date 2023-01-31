@@ -199,3 +199,9 @@ class data_manager(object):
         result = sql.truncate(table, show_sql)
         sql.become_free()
         return result
+
+    def commit(self):
+        sql = self.find_free_sql()
+        sql.commit()
+        return
+
