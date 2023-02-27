@@ -1,4 +1,5 @@
 import datetime
+import functools
 import os
 import sqlite3
 import sys
@@ -81,3 +82,18 @@ def clean_old_log(filename='*.log'):
     if sys.platform != 'win32':
         os.system('rm %s%s'%(LOG_PATH,filename))
 
+
+
+def async_decorators(method):
+    """
+    异步装饰器装饰异步方法
+    :param method: 被装饰协程（异步方法）
+    :return:
+    """
+    @functools.wraps(method)
+    async def wrapper(*args, **kwargs):
+        # 异步执行
+        # 此处必须await 切换调用被装饰协程，否则不会运行该协程
+        data = method(*args, **kwargs)
+        return data
+    return wrapper

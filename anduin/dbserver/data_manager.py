@@ -86,10 +86,10 @@ class data_manager(object):
 
 
     def new(self):
-        sql = self.create_new_sql()
+        sql_session = self.create_new_sql()
         # dbg(id(sql))
         # self.add_new_sql(sql)
-        return sql
+        return sql_session
 
     def create_new_sql(self, ):
         sql = Base(self.t_data['host'], self.t_data['user'], self.t_data['password'], self.t_data['database'],

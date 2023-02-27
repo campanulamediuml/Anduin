@@ -25,6 +25,6 @@ from .common.tools import get_filename,clean_old_log
 from .server import *
 # from .server_async import *
 
-__version__ = "7.1.6"
+__version__ = "7.1.9"
 
 
