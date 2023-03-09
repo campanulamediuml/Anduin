@@ -24,7 +24,7 @@ class AsyncMySQLClient(ClientBase):
     async def connect_db(self):
         res = await aiomysql.connect(host=self._host, user=self._user, password=self._psw, db=self._dbname,
                                      charset=self._charset, port=self._port)
-        print('连接成功')
+        dbg('连接成功')
         if isinstance(res, Exception) is False:
             self.db = res
 
@@ -43,6 +43,10 @@ class AsyncMySQLClient(ClientBase):
             table_name = self._dbname + '.' + table
             await self.load_an_table(table_name)
 
+    async def release_lock(self):
+        await self.commit()
+        self.is_lock = False
+
     async def commit(self):
         await self.db.commit()
 
@@ -56,7 +60,7 @@ class AsyncMySQLClient(ClientBase):
             dbg('sql_id', id(self), dummy_sql)
         try:
             if sql_params is not None:
-                await cursor.execute(sql % tuple(sql_params))
+                await cursor.execute(sql,tuple(sql_params))
             else:
                 await cursor.execute(sql)
             self.update_last_execute_time()
@@ -122,7 +126,7 @@ class AsyncMySQLClient(ClientBase):
 
     async def insert(self, table, content, show_sql=False):
         sql, sql_params = Parser.insert_parser(table, content)
-        r = self.query(sql, show_sql, sql_params)
+        r = await self.query(sql, show_sql, sql_params)
         return r
 
     async def update(self, table, conditions, or_cond=None, params=None, show_sql=False):

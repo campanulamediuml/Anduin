@@ -110,3 +110,6 @@ def async_decorators(method):
         return data
 
     return wrapper
+
+def get_obj_name(obj):
+    return obj.__name__

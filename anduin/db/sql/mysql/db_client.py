@@ -55,7 +55,7 @@ class MySQLClient(ClientBase):
             dbg('sql_id', id(self), dummy_sql)
         try:
             if sql_params is not None:
-                cursor.execute(sql % tuple(sql_params))
+                cursor.execute(sql , tuple(sql_params))
             else:
                 cursor.execute(sql)
             self.update_last_execute_time()
@@ -136,15 +136,3 @@ class MySQLClient(ClientBase):
         #  #
         r = self.query(sql, show_sql, sql_params)
         return r
-
-
-if __name__ == '__main__':
-    def search():
-        sql_client = MySQLClient('127.0.0.1', 'root', '033248hyzh', 3306, 'eyewave_sec', 'mysql', 'utf8mb4')
-        # sql_client.connect_db()
-        r = sql_client.query('select %s,%s from user where id = 1',
-                             sql_params=('id from user where id = 2 ;--', 'username'))
-        print(r)
-
-
-    search()

@@ -21,18 +21,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE."""
 # <=========>
 
-from .common.tools import get_filename, clean_old_log
+from .common.tools import get_filename, clean_old_log, dbg, get_obj_name
 from .db.no_sql.redis.redis_client_manager import RedisManager
 from .db.sql.async_mysql.db_client_manager import AsyncMySQLManager
 from .db.sql.mysql.db_client_manager import MySQLManager
 from .db.sql.sqlite.db_client_manager import SQLiteManager
-from .server import *
 
 AsyncMySQL = AsyncMySQLManager
 MySQL = MySQLManager
 SQLite = SQLiteManager
 Redis = RedisManager
 
-# from .server_async import *
+conf_map = {
 
-__version__ = "8.0.0"
+}
+def auto_init():
+    dbg('自动初始化同步mysql')
+    try:
+        from config.db_config import db_config
+        mysql_pool = MySQL(db_config)
+        dbg('自动初始化同步mysql成功')
+        return mysql_pool
+    except Exception as e:
+        dbg(e)
+
+Data = auto_init()
+if Data is None:
+    dbg('自动初始化同步mysql失败')
+
+
+
+__version__ = "8.2.5"
+
+
+

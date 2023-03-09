@@ -39,25 +39,3 @@ class AsyncMySQLManager(ManagerBase):
         my_client.lock()
         return my_client
 
-
-if __name__ == '__main__':
-    db_config = {
-        'host': '127.0.0.1',
-        'user': 'root',
-        'password': '033248hyzh',
-        'database': 'eyewave_sec',
-        'port': 3306,
-        'engine': 'mysql'
-    }
-    manager = AsyncMySQLManager(db_config)
-
-
-    async def search():
-        session = await manager.get_free_sql()
-        res = await session.query('select * from user where %s = %s ', sql_params=("id", "2"), return_dict=True)
-        print(res)
-        await session.commit()
-
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(search())

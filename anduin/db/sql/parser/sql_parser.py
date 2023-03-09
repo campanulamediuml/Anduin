@@ -141,6 +141,3 @@ class Parser(object):
         return sql, sql_params
 
 
-if __name__ == '__main__':
-    sql = Parser.update_parser('test', [('id', '=', 1)], [], {'username': 'user', 'k_2': 22})
-    print(sql)

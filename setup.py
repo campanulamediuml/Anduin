@@ -1,8 +1,8 @@
 import codecs
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
-VER = "8.0.0"
+VER = "8.2.5"
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname),encoding='utf-8').read()
@@ -33,6 +33,6 @@ if __name__ == '__main__':
         ],
         include_package_data=True,
         zip_safe=True,
-        packages=['anduin', 'anduin/dbserver','anduin/common','anduin/parser'],
+        packages=find_packages(),
         python_requires='>=3.6',
     )
