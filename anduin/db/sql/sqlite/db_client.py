@@ -5,7 +5,7 @@ import sqlite3
 from typing import Iterable, Dict
 
 
-from anduin.common import ENGINE_SQLITE,dbg
+from anduin.common import ENGINE_SQLITE,dbg,get_obj_name
 from anduin.db.sql.parser.sql_parser import Parser
 from anduin.frames.client_base import ClientBase
 
@@ -17,7 +17,14 @@ class SQLiteClient(ClientBase):
         self._tables: Dict[str, Iterable] = {}
 
     def connect_db(self):
-        sqlite3.connect(self._dbname)
+        try:
+            res  =  sqlite3.connect(self._dbname)
+            dbg('连接创建成功', get_obj_name(self))
+            return res
+        except Exception as e:
+            dbg('连接创建失败', e,get_obj_name(self))
+            return
+
 
     def load_an_table(self, tablename):
         sql = 'PRAGMA table_info(%s)' % tablename

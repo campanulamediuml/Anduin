@@ -15,13 +15,13 @@ class AsyncMySQLManager(ManagerBase):
         super().__init__(config)
 
     async def create_connection(self):
+        dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
         db_client = AsyncMySQLClient(self.host, self.user, self.password, self.port, self.database, ENGINE_MYSQL,
                                      self.charset)
         await db_client.connect_db()
         my_pool = self.get_cur_client_pool_by_thread_id()
         sid = id(db_client)
         my_pool[sid] = db_client
-        dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
         return db_client
 
     async def get_free_client(self):

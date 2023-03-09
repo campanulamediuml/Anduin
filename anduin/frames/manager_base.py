@@ -7,7 +7,7 @@ import threading
 import time
 from typing import List, Dict
 
-from anduin.common import dbg
+from anduin.common import dbg, get_obj_name
 from anduin.frames.client_base import ClientBase
 
 TIMEOUT = 30
@@ -32,7 +32,7 @@ class ManagerBase(abc.ABC):
         # {
         #     tid:[connect_sid]
         # }
-        dbg('creating DB connection pool...')
+        # dbg('creating DB connection pool...',get_obj_name(self))
 
     @staticmethod
     def get_cur_thread_id() -> str:
@@ -49,7 +49,7 @@ class ManagerBase(abc.ABC):
 
     def get_cur_outtime_pool_by_thread_id(self) -> List[int]:
         tid = ManagerBase.get_cur_thread_id()
-        if tid not in self.connect_pool:
+        if tid not in self.out_time_pool:
             self.out_time_pool[tid] = []
         return self.out_time_pool.get(tid)
 
@@ -65,6 +65,8 @@ class ManagerBase(abc.ABC):
         cur_time = int(time.time())
         cur_out_time_pool = self.get_cur_outtime_pool_by_thread_id()
         cur_pool = self.get_cur_client_pool_by_thread_id()
+        print(cur_out_time_pool)
+        print(cur_pool)
         for sid,client in cur_pool.items():
             if cur_time - client.last_connect_time > TIMEOUT:
                 if client.is_lock is False:

@@ -1,12 +1,13 @@
 # !/usr/bin/env python
 # -*-coding:utf-8 -*-
 # Author     ：Campanula 梦芸 何
-from typing import Iterable
+from typing import Iterable, Union, List, Any
 
 import pymysql
+from pymysql import Connection
 from pymysql.cursors import DictCursor
 
-from anduin.common import ENGINE_MYSQL,dbg
+from anduin.common import ENGINE_MYSQL,dbg,get_obj_name
 from anduin.db.sql.parser.sql_parser import Parser
 from anduin.frames.client_base import ClientBase
 
@@ -18,14 +19,18 @@ class MySQLClient(ClientBase):
         self._tables = {}
         self._load_tables()
 
-    def connect_db(self):
-        res = pymysql.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname,
-                              charset=self._charset, port=self._port,
-                              connect_timeout=60)
-        if isinstance(res, Exception) is False:
+    def connect_db(self)->Union[Connection,None]:
+        try:
+            res = pymysql.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname,
+                                  charset=self._charset, port=self._port,
+                                  connect_timeout=60)
+            dbg('连接创建成功', get_obj_name(self))
             return res
+        except Exception as e:
+            dbg('连接创建失败',e,get_obj_name(self))
+            return
 
-    def load_an_table(self, tablename):
+    def load_an_table(self, tablename)->Union[List,Any]:
         sql = 'show fields from ' + tablename
         res = self.query(sql, show_sql=False)
         if isinstance(res,Iterable):

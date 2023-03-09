@@ -1,10 +1,12 @@
 import datetime
 import functools
+import inspect
 import os
 import sqlite3
 import sys
 import time
 from functools import wraps
+from typing import Any
 
 import aredis
 import pymysql
@@ -111,5 +113,8 @@ def async_decorators(method):
 
     return wrapper
 
-def get_obj_name(obj):
-    return obj.__name__
+def get_obj_name(obj: Any) -> str:
+    """获取对象的名称"""
+    if inspect.isfunction(obj) or inspect.isclass(obj):
+        return obj.__name__
+    return obj.__class__.__name__

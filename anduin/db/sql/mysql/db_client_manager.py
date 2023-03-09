@@ -13,16 +13,16 @@ class MySQLManager(ManagerBase):
         super().__init__(config)
 
     def create_connection(self):
+        dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
         db_client = MySQLClient(self.host, self.user, self.password, self.port, self.database, ENGINE_MYSQL,
                                 self.charset)
         my_pool = self.get_cur_client_pool_by_thread_id()
         sid = id(db_client)
         my_pool[sid] = db_client
-        dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
         return db_client
 
     def get_free_client(self):
-        self.clean_pool()
+        # print(self.get_cur_thread_id())
         my_client = None
         cur_time = int(time.time())
         my_pool = self.get_cur_client_pool_by_thread_id()
@@ -34,4 +34,5 @@ class MySQLManager(ManagerBase):
         if my_client is None:
             my_client = self.create_connection()
         my_client.lock()
+        self.clean_pool()
         return my_client

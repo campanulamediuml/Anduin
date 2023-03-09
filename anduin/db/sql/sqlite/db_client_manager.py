@@ -13,11 +13,11 @@ class SQLiteManager(ManagerBase):
         super().__init__(config)
 
     def create_connection(self):
+        dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
         db_client = SQLiteClient(self.host, self.user, self.password, None, self.database, ENGINE_SQLITE, self.charset)
         my_pool = self.get_cur_client_pool_by_thread_id()
         sid = id(db_client)
         my_pool[sid] = db_client
-        dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
         return db_client
 
     def get_free_client(self):

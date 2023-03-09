@@ -6,7 +6,8 @@ from typing import Iterable
 import aiomysql
 from aiomysql import DictCursor
 
-from anduin.common import dbg
+
+from anduin.common import dbg, get_obj_name
 from anduin.common import ENGINE_MYSQL
 from anduin.db.sql.parser.sql_parser import Parser
 from anduin.frames.client_base import ClientBase
@@ -22,11 +23,17 @@ class AsyncMySQLClient(ClientBase):
         self._tables = {}
 
     async def connect_db(self):
-        res = await aiomysql.connect(host=self._host, user=self._user, password=self._psw, db=self._dbname,
+        try:
+            res = await aiomysql.connect(host=self._host, user=self._user, password=self._psw, db=self._dbname,
                                      charset=self._charset, port=self._port)
-        dbg('连接成功')
-        if isinstance(res, Exception) is False:
+        # dbg('连接成功',type(res))
+            dbg('连接创建成功', get_obj_name(self))
             self.db = res
+            return res
+        except Exception as e:
+            dbg('连接创建失败',e,get_obj_name(self))
+            return
+
 
     async def load_an_table(self, tablename):
         sql = 'show fields from ' + tablename

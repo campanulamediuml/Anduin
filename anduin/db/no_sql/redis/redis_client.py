@@ -9,6 +9,7 @@ import aredis
 from aredis import StrictRedis
 
 from anduin.frames.client_base import ClientBase
+from anduin.common import dbg,get_obj_name
 
 
 class RedisClient(ClientBase):
@@ -22,10 +23,15 @@ class RedisClient(ClientBase):
     def unlock(self):
         self.is_lock = False
 
-    def connect_db(self)->StrictRedis:
-        r = aredis.StrictRedis(host=self._host, port=self._port, password=self._psw,db=self._dbname,)
-        if isinstance(r,Exception) is False:
-            return r
+    def connect_db(self)->Union[StrictRedis,None]:
+        try:
+            res = aredis.StrictRedis(host=self._host, port=self._port, password=self._psw,db=self._dbname,)
+            dbg('连接创建成功', get_obj_name(self))
+            return res
+        except Exception as e:
+            dbg('连接创建失败', e, get_obj_name(self))
+            return
+
 
     async def hmget(self,key:str,*args) -> Dict[str,Dict]:
         res = await self.db.hmget(key,*args)
