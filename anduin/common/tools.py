@@ -37,23 +37,28 @@ def get_filename():
         fn = '%s\\.anduin\\%s-%s.log' % (os.path.expanduser('~'), sys.argv[0].split('\\')[-1], start_time)
     return fn
 
-
 fn = get_filename()
-# if sys.platform != 'win32':
-try:
-    os.mkdir('%s/.anduin' % os.path.expanduser('~'))
-except Exception as e:
-    print(str(e))
-print('anduin调用日志保存在%s' % get_filename())
-# else:
-#     print('该操作系统为windows系统，暂时无法保存日志')
+if sys.platform != 'win32':
+    try:
+        os.mkdir('%s/.anduin' % os.path.expanduser('~'))
+    except Exception as e:
+        print(str(e))
+    print('系统内核为',sys.platform,'本插件调用日志保存在%s' % get_filename())
+else:
+    print('windows下不支持持久化日志，请自行控制台生产')
 fh = open(fn, 'a')
+
+
+if sys.platform != 'win32':
+    write_log = True
+else:
+    write_log = False
 
 
 def dbg(*args):
     res = ['[%s Anduin Engine]' % time_to_str(int(time.time()))] + list(args)
     print(*res)
-    if sys.platform != 'win32':
+    if write_log:
         for i in res:
             fh.write(str(i) + ' ')
         fh.write('\n')
