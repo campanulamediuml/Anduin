@@ -21,10 +21,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE."""
 # <=========>
 
-from .common.tools import get_filename,clean_old_log
+from .common.tools import get_filename, clean_old_log
+from .db.no_sql.redis.redis_client_manager import RedisManager
+from .db.sql.async_mysql.db_client_manager import AsyncMySQLManager
+from .db.sql.mysql.db_client_manager import MySQLManager
+from .db.sql.sqlite.db_client_manager import SQLiteManager
 from .server import *
+
+AsyncMySQL = AsyncMySQLManager
+MySQL = MySQLManager
+SQLite = SQLiteManager
+Redis = RedisManager
+
 # from .server_async import *
 
-__version__ = "7.1.9"
-
-
+__version__ = "8.0.0"

@@ -1,8 +1,11 @@
 import threading
+
 # import time
 from .common.tools import *
+
 # 保持兼容
 TIME_ACCURACY = 1  # 时间精度，时间精度不是越小越好！你的Task每次循环超过了这个值,将影响准确度
+
 
 def IntervalTask(sec, func, params=(), immediatly=True, thread_name=''):
     def run(*func_params):

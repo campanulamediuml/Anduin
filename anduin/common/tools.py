@@ -6,51 +6,61 @@ import sys
 import time
 from functools import wraps
 
+import aredis
 import pymysql
 
 ENGINE_SQLITE = 'sqlite'
 ENGINE_MYSQL = 'mysql'
+ENGINE_REDIS = 'redis'
 danger_sig = ['--', '-+', '#']
 start_time = int(time.time())
 ENGINE_DICT = {
     ENGINE_MYSQL: pymysql,
-    ENGINE_SQLITE:sqlite3
+    ENGINE_SQLITE: sqlite3,
+    ENGINE_REDIS:aredis,
 }
 sql_clean_time = 45
-LOG_PATH = '%s/.anduin/'%os.path.expanduser('~')
+LOG_PATH = '%s/.anduin/' % os.path.expanduser('~')
+
 
 def time_to_str(times):
     date_array = datetime.datetime.utcfromtimestamp(times + (8 * 3600))
     return date_array.strftime("%Y-%m-%d %H:%M:%S")
 
+
 def get_filename():
-    # if sys.platform != 'win32':
-    fn = '%s%s-%s.log'%(LOG_PATH,sys.argv[0].split('/')[-1],start_time)
-    # else:
-    #     fn = '%s\\.anduin\\%s-%s.log'%(os.path.expanduser('~'),sys.argv[0].split('\\')[-1],start_time)
+    if sys.platform != 'win32':
+        fn = '%s%s-%s.log' % (LOG_PATH, sys.argv[0].split('/')[-1], start_time)
+    else:
+        fn = '%s\\.anduin\\%s-%s.log' % (os.path.expanduser('~'), sys.argv[0].split('\\')[-1], start_time)
     return fn
+
 
 fn = get_filename()
 # if sys.platform != 'win32':
 try:
-    os.mkdir('%s/.anduin'%os.path.expanduser('~'))
+    os.mkdir('%s/.anduin' % os.path.expanduser('~'))
 except Exception as e:
     print(str(e))
-print('anduin调用日志保存在%s'%get_filename())
+print('anduin调用日志保存在%s' % get_filename())
 # else:
 #     print('该操作系统为windows系统，暂时无法保存日志')
 fh = open(fn, 'a')
+
+
 def dbg(*args):
-    res = ['[%s Anduin Engine]'%time_to_str(int(time.time()))]+list(args)
+    res = ['[%s Anduin Engine]' % time_to_str(int(time.time()))] + list(args)
     print(*res)
     if sys.platform != 'win32':
         for i in res:
-            fh.write(str(i)+' ')
+            fh.write(str(i) + ' ')
         fh.write('\n')
         # fh.close()
 
+
 def get_db_index(db_config_dict):
-    return db_config_dict['user'] + '@' + db_config_dict['host'] + ':' + db_config_dict['database']
+    return '%s@%s:%s'%(db_config_dict.get('user'),db_config_dict.get('host'),db_config_dict.get('database'))
+
 
 def func_time(f):
     """
@@ -67,6 +77,7 @@ def func_time(f):
         info = str(f.__name__) + ' took ' + str(end - start) + ' seconds '
         dbg(info)
         return result
+
     return wrapper
 
 
@@ -78,10 +89,10 @@ def can_return_directly(res):
     if isinstance(res, Exception):
         return True
 
+
 def clean_old_log(filename='*.log'):
     if sys.platform != 'win32':
-        os.system('rm %s%s'%(LOG_PATH,filename))
-
+        os.system('rm %s%s' % (LOG_PATH, filename))
 
 
 def async_decorators(method):
@@ -90,10 +101,12 @@ def async_decorators(method):
     :param method: 被装饰协程（异步方法）
     :return:
     """
+
     @functools.wraps(method)
     async def wrapper(*args, **kwargs):
         # 异步执行
         # 此处必须await 切换调用被装饰协程，否则不会运行该协程
         data = method(*args, **kwargs)
         return data
+
     return wrapper

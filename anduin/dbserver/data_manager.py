@@ -84,7 +84,6 @@ class data_manager(object):
         # dbg('为线程%s更新数据库链接%s'%(thread_id,id(sql)))
         return session
 
-
     def new(self):
         sql_session = self.create_new_sql()
         # dbg(id(sql))
@@ -130,7 +129,7 @@ class data_manager(object):
                 return res
 
         result = sql.find(table, conditions, or_cond, fields, order, show_sql, for_update)
-         # 获取结果
+        # 获取结果
         # result = get_async_result(async_r)
         sql.become_free()
         if can_return_directly(result) is True:
@@ -204,4 +203,3 @@ class data_manager(object):
         sql = self.find_free_sql()
         sql.commit()
         return
-

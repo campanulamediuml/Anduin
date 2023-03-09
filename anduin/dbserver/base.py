@@ -3,8 +3,8 @@ from typing import Iterable
 
 from pymysql.cursors import DictCursor
 
-from ..parser.parser import sql_parser
 from ..common.tools import dbg, ENGINE_MYSQL, ENGINE_SQLITE, ENGINE_DICT, can_return_directly
+from ..parser.parser import sql_parser
 
 
 class Base(sql_parser):
@@ -40,7 +40,8 @@ class Base(sql_parser):
 
     def connect(self):
         if self._engine == ENGINE_MYSQL:
-            self.db = self.db_engine.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname, charset=self._charset,
+            self.db = self.db_engine.connect(host=self._host, user=self._user, password=self._psw,
+                                             database=self._dbname, charset=self._charset,
                                              connect_timeout=60)
             return self.db
         if self._engine == ENGINE_SQLITE:
@@ -71,18 +72,18 @@ class Base(sql_parser):
     def keep_connect(self):
         if self.db is None:
             self.connect_db()
-        if self._engine !=ENGINE_SQLITE:
+        if self._engine != ENGINE_SQLITE:
             self.query('select 1')
 
     def load_an_table(self, table):
-        if self._engine ==ENGINE_SQLITE:
+        if self._engine == ENGINE_SQLITE:
             sql = 'PRAGMA table_info(%s)' % table
         else:
             sql = 'show fields from ' + table
         res = self.query(sql, show_sql=False)
         if res is None:
             return
-        if isinstance(res,Iterable):
+        if isinstance(res, Iterable):
             column_list = list(map(lambda x: x[0], res))
             if 'signal' in column_list:
                 column_list.remove('signal')
@@ -110,7 +111,6 @@ class Base(sql_parser):
         self.commit()
         return
 
-
     # 查找数据（单条）
     def find(self, table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False, for_update=False):
         if table not in self._tables:
@@ -134,7 +134,7 @@ class Base(sql_parser):
         if 0 == len(res):
             return None
 
-        if self._engine ==ENGINE_SQLITE:
+        if self._engine == ENGINE_SQLITE:
             result = dict(zip(fields, res[0]))
         else:
             result = res[0]
@@ -165,7 +165,7 @@ class Base(sql_parser):
             return None
 
         result = []
-        if self._engine ==ENGINE_SQLITE:
+        if self._engine == ENGINE_SQLITE:
             for data in res:
                 data = dict(zip(fields, data))
                 result.append(data)
@@ -179,13 +179,13 @@ class Base(sql_parser):
         return res
 
     def insert(self, table, content, show_sql=False):
-        sql,sql_params = Base.insert_parser(table,content)
+        sql, sql_params = Base.insert_parser(table, content)
         r = self.query(sql, show_sql, sql_params)
         return r
 
     def update(self, table, conditions, or_cond=None, params=None, show_sql=False):
         # dbg('开始执行')
-        sql,sql_params = Base.update_parser(table,conditions,or_cond,params)
+        sql, sql_params = Base.update_parser(table, conditions, or_cond, params)
         r = self.query(sql, show_sql, sql_params)
         # dbg('自动提交完毕')
         return r
@@ -255,7 +255,7 @@ class Base(sql_parser):
     def get_last_connect_time(self):
         return self.last_connect_time
 
-    async def truncate(self, table, show_sql=False):
+    def truncate(self, table, show_sql=False):
         sql = 'TRUNCATE TABLE %s' % table
         self.query(sql, show_sql)
         return

@@ -1,7 +1,10 @@
+# !/usr/bin/env python
+# -*-coding:utf-8 -*-
+# Author     ：Campanula 梦芸 何
 from anduin.common.tools import ENGINE_SQLITE, ENGINE_MYSQL
 
 
-class sql_parser(object):
+class Parser(object):
     @staticmethod
     def create_table_parser(table, columns, table_comment='', sql_engine=ENGINE_MYSQL):
         sql = 'create table %s(' % table
@@ -48,11 +51,12 @@ class sql_parser(object):
 
     @staticmethod
     def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None, for_update=False):
-        if fields is None:
-            return
+
+        fields = list(fields)
+        # print(fields)
         sql = 'select %s from %s where  ' % (','.join(fields), table)
         # dbg(sql)
-        sql, sql_params = sql_parser.bind_conditions(sql, conditions, or_cond)
+        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond)
 
         if group is not None:
             sql += 'group by '
@@ -129,7 +133,7 @@ class sql_parser(object):
             sql_params_header += [value]
 
         sql = sql[:-1] + ' where  '
-        sql, sql_params = sql_parser.bind_conditions(sql, conditions, or_cond)
+        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond)
         # dbg(sql)
         if sql_params is None:
             sql_params = []
@@ -138,5 +142,5 @@ class sql_parser(object):
 
 
 if __name__ == '__main__':
-    sql = sql_parser.update_parser('test', [('id', '=', 1)], [], {'username': 'user', 'k_2': 22})
+    sql = Parser.update_parser('test', [('id', '=', 1)], [], {'username': 'user', 'k_2': 22})
     print(sql)

@@ -15,6 +15,7 @@ from .dbserver.data_manager import data_manager
 
 db_config = None
 
+
 class Data(object):
     Base_pool = {}
     try:
@@ -88,6 +89,7 @@ class Data(object):
         if show_manager_id is True:
             dbg('本次任务通过', base_id, '执行')
         return Data.Base_pool[base_id].new() if base_id in Data.Base_pool else None
+
     # 使用async时
 
     # create a new connect for an existed connection pool
@@ -223,6 +225,7 @@ class Data(object):
             return table_index
         except Exception as e:
             dbg(str(e))
+
     # dump database as an Anduin-data-frame
 
     @staticmethod
