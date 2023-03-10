@@ -10,6 +10,7 @@ ANDUIN_VER = '8.3.0'
 # 7.1.13 : 7系列同步最后版本
 # 8.0.0 ：支持异步/异步redis  全新可扩展架构
 
+
 def add_copy_right_and_version():
     # pass
     print('写入版权数据，生成版本信息')
