@@ -12,7 +12,7 @@ from anduin.frames.client_base import ClientBase
 from anduin.common import dbg,get_obj_name
 
 
-class AsyncRedisClient(ClientBase):
+class RedisClient(ClientBase):
     def __init__(self,*args):
         super().__init__(*args)
         self.db:Union[StrictRedis,None] = self.connect_db()
