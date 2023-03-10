@@ -9,7 +9,7 @@ from aiomysql import DictCursor
 
 from anduin.common import dbg, get_obj_name
 from anduin.common import ENGINE_MYSQL
-from anduin.parser import Parser
+from anduin.parser.sql_parser import Parser
 from anduin.frames.client_base import ClientBase
 
 

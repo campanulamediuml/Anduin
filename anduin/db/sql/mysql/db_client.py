@@ -8,7 +8,7 @@ from pymysql import Connection
 from pymysql.cursors import DictCursor
 
 from anduin.common import ENGINE_MYSQL,dbg,get_obj_name
-from anduin.parser import Parser
+from anduin.parser.sql_parser import Parser
 from anduin.frames.client_base import ClientBase
 
 
