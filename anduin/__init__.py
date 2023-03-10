@@ -22,15 +22,16 @@ THE SOFTWARE."""
 # <=========>
 
 from .common.tools import get_filename, clean_old_log, dbg, get_obj_name
-from .db.no_sql.redis.redis_client_manager import RedisManager
+from .db.no_sql.async_redis.redis_client_manager import AsyncRedisManager
 from .db.sql.async_mysql.db_client_manager import AsyncMySQLManager
 from .db.sql.mysql.db_client_manager import MySQLManager
 from .db.sql.sqlite.db_client_manager import SQLiteManager
 
-AsyncMySQL = AsyncMySQLManager
+AMySQL = AsyncMySQLManager
 MySQL = MySQLManager
 SQLite = SQLiteManager
-Redis = RedisManager
+ARedis = AsyncRedisManager
+
 
 conf_map = {
 
@@ -51,7 +52,7 @@ if Data is None:
 
 
 
-__version__ = "8.2.8"
+__version__ = "8.2.9"
 
 
 

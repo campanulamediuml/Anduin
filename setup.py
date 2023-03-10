@@ -2,7 +2,7 @@ import codecs
 import os
 from setuptools import setup, find_packages
 
-VER = "8.2.8"
+VER = "8.2.9"
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname),encoding='utf-8').read()
@@ -12,13 +12,13 @@ if __name__ == '__main__':
         # 以下为必需参数
         name='anduin',  # 模块名
         version=VER,  # 当前版本
-        description='a lite mysql & sqlite3 & redis connect engine, mapping table into k-v structure , support async work',  # 简短描述
+        description='a lite mysql & sqlite3 & async_redis connect engine, mapping table into k-v structure , support async work',  # 简短描述
         license='MIT',
         long_description=read("README.md"),
         author='campanula',
         author_email='campanulamediuml@gmail.com',
         platforms='any',
-        keywords="mysql , sqlite3 , sql engine , orm , redis",
+        keywords="mysql , sqlite3 , sql engine , orm , async_redis",
         classifiers=[
             'License :: OSI Approved :: MIT License',
             'Intended Audience :: Developers',
@@ -29,7 +29,8 @@ if __name__ == '__main__':
         install_requires=[
             'pymysql>=0.9',
             'aredis>=1.1.0',
-            'aiomysql>=0.0.21'
+            'aiomysql>=0.0.21',
+            'redis>=4.0.0'
         ],
         include_package_data=True,
         zip_safe=True,

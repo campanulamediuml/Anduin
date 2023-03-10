@@ -5,8 +5,8 @@ import json
 import time
 from typing import Union, Dict
 
-import redis
-from redis import StrictRedis
+import aredis
+from aredis import StrictRedis
 
 from anduin.frames.client_base import ClientBase
 from anduin.common import dbg,get_obj_name
@@ -25,7 +25,7 @@ class AsyncRedisClient(ClientBase):
 
     def connect_db(self)->Union[StrictRedis,None]:
         try:
-            res = redis.StrictRedis(host=self._host, port=self._port, password=self._psw,db=self._dbname,)
+            res = aredis.StrictRedis(host=self._host, port=self._port, password=self._psw,db=self._dbname,)
             dbg('连接创建成功', get_obj_name(self))
             return res
         except Exception as e:
@@ -33,8 +33,8 @@ class AsyncRedisClient(ClientBase):
             return
 
 
-    def hmget(self,key:str,*args) -> Dict[str,Dict]:
-        res =  self.db.hmget(key,*args)
+    async def hmget(self,key:str,*args) -> Dict[str,Dict]:
+        res = await self.db.hmget(key,*args)
         r = {}
         for i in range(0, len(args)):
             k = args[i]
@@ -44,23 +44,30 @@ class AsyncRedisClient(ClientBase):
         self.last_connect_time = int(time.time())
         return r
 
-    def hmset(self,*args):
-        res = self.db.hmset(*args)
+    async def hmset(self,*args):
+        res = await self.db.hmset(*args)
         self.last_connect_time = int(time.time())
         return res
-    def get(self,*args):
-        res =  self.db.get(*args)
+    async def get(self,*args):
+        res = await self.db.get(*args)
         if isinstance(res,bytes):
             return res.decode('utf-8')
         self.last_connect_time = int(time.time())
         return res
 
-    def set(self,*args):
-        res =  self.db.set(*args)
+    async def set(self,*args):
+        res = await self.db.set(*args)
         self.last_connect_time = int(time.time())
         return res
 
-    def expire(self,*args):
-        res =  self.db.expire(*args)
+    async def expire(self,*args):
+        res = await self.db.expire(*args)
         self.last_connect_time = int(time.time())
         return res
+
+
+
+
+
+
+

@@ -13,7 +13,7 @@ import pymysql
 
 ENGINE_SQLITE = 'sqlite'
 ENGINE_MYSQL = 'mysql'
-ENGINE_REDIS = 'redis'
+ENGINE_REDIS = 'async_redis'
 danger_sig = ['--', '-+', '#']
 start_time = int(time.time())
 ENGINE_DICT = {

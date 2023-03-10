@@ -6,7 +6,7 @@ from typing import Iterable, Dict
 
 
 from anduin.common import ENGINE_SQLITE,dbg,get_obj_name
-from anduin.db.sql.parser.sql_parser import Parser
+from anduin.parser import Parser
 from anduin.frames.client_base import ClientBase
 
 

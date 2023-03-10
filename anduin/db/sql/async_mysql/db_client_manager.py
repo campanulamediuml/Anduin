@@ -7,7 +7,7 @@ import time
 
 from anduin.common import dbg,get_db_index,ENGINE_MYSQL
 from anduin.db.sql.async_mysql.db_client import AsyncMySQLClient
-from anduin.frames.manager_base import ManagerBase
+from anduin.frames.manager_base import ManagerBase, TIMEOUT
 
 
 class AsyncMySQLManager(ManagerBase):
@@ -30,7 +30,7 @@ class AsyncMySQLManager(ManagerBase):
         cur_time = int(time.time())
         my_pool = self.get_cur_client_pool_by_thread_id()
         for sid, client in my_pool.items():
-            if cur_time - client.last_connect_time < 30:
+            if cur_time - client.last_connect_time < TIMEOUT:
                 if client.is_lock is False:
                     my_client = client
                     break
