@@ -2,7 +2,9 @@ import datetime
 import functools
 import inspect
 import os
+import random
 import sqlite3
+import string
 import sys
 import time
 from functools import wraps
@@ -123,3 +125,7 @@ def get_obj_name(obj: Any) -> str:
     if inspect.isfunction(obj) or inspect.isclass(obj):
         return obj.__name__
     return obj.__class__.__name__
+
+def create_rand_string(length=16):
+    ran_str = ''.join(random.sample(string.ascii_letters + string.digits, length))
+    return ran_str

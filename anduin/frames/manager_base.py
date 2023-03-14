@@ -65,8 +65,8 @@ class ManagerBase(abc.ABC):
         cur_time = int(time.time())
         cur_out_time_pool = self.get_cur_outtime_pool_by_thread_id()
         cur_pool = self.get_cur_client_pool_by_thread_id()
-        print(cur_out_time_pool)
-        print(cur_pool)
+        # print(cur_out_time_pool)
+        # print(cur_pool)
         for sid,client in cur_pool.items():
             if cur_time - client.last_connect_time > TIMEOUT:
                 if client.is_lock is False:

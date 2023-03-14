@@ -1,6 +1,7 @@
 # !/usr/bin/env python
 # -*-coding:utf-8 -*-
 # Author     ：Campanula 梦芸 何
+import asyncio
 from typing import Iterable
 
 import aiomysql
@@ -21,6 +22,7 @@ class AsyncMySQLClient(ClientBase):
         super().__init__(*args)
         self.db = None
         self._tables = {}
+
 
     async def connect_db(self):
         try:
@@ -149,3 +151,9 @@ class AsyncMySQLClient(ClientBase):
         #  #
         r = await self.query(sql, show_sql, sql_params)
         return r
+
+if __name__ == '__main__':
+    async def get_data():
+        return 'xxx'
+    r = asyncio.run(get_data())
+    print(r)

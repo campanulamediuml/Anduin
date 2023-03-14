@@ -17,10 +17,8 @@ class RedisClient(ClientBase):
         super().__init__(*args)
         self.db:Union[StrictRedis,None] = self.connect_db()
 
-    def lock(self):
-        self.is_lock = True
 
-    def unlock(self):
+    def release_lock(self):
         self.is_lock = False
 
     def connect_db(self)->Union[StrictRedis,None]:

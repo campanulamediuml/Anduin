@@ -6,16 +6,18 @@ from anduin.common.tools import time_to_str
 SETUP_PATH = './setup.py'
 INIT_PATH = './anduin/__init__.py'
 COPY_RIGHT_FILE = './COPYING.txt'
-ANDUIN_VER = '8.3.0'
+ANDUIN_VER = '8.4.2'
 # 7.1.13 : 7系列同步最后版本
 # 8.0.0 ：支持异步/异步redis  全新可扩展架构
 
 
 def add_copy_right_and_version():
     # pass
-    print('写入版权数据，生成版本信息')
+    print('写入版权数据。。。')
     split_line = '\n# <=========>\n'
-    cpright = '"""' + open(COPY_RIGHT_FILE).read() + '"""'
+    cpright = '"""' + open(COPY_RIGHT_FILE).read() + '"""\n'
+    cpright += 'info = """' + open(COPY_RIGHT_FILE).read() + '"""'
+    print('写入版权数据写入完毕，生成版本信息。。。')
     code_content = open(INIT_PATH).read().split(split_line)
     if len(code_content) == 1:
         code = code_content[0]

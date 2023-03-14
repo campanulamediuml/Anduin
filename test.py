@@ -1,6 +1,6 @@
+import asyncio
 
-
-from anduin import MySQL
+from anduin import AMySQL
 
 # session = Data.add_new_sql()
 
@@ -15,23 +15,20 @@ cnf =  {
 
 
 
-def find_data(r):
-    Data = r.get_free_client()
-    r = Data.find('user',[('username','=','youtube1')])
-    print(r)
-
-# async def async_find_data():
-#     r = AsyncMySQL(cnf)
-#     Data = await r.get_free_client()
-#     r = await Data.find('user',[('username','=','youtube1')])
+# def find_data(r):
+#     Data = r.get_free_client()
+#     r = Data.find('user',[('username','=','youtube1')])
 #     print(r)
 
+async def async_find_data():
+    r = AMySQL(cnf)
+    Data = await r.get_free_client()
+    r = await Data.find('user',[('username','=','youtube1')])
+    print(r)
+
 if __name__ == '__main__':
-    r = MySQL(cnf)
-    cur_tid = MySQL.get_cur_thread_id()
-    c_pool = r.get_cur_client_pool_by_thread_id()
-    print(len(c_pool))
-    find_data(r)
+    r = asyncio.run(async_find_data())
+    print(r)
     # Data = r.get_free_client()
     # r = Data.find('user', [('username', '=', 'youtube1')])
     # print(r)

@@ -15,6 +15,7 @@ class SQLiteClient(ClientBase):
         super().__init__(*args)
         self.db = self.connect_db()
         self._tables: Dict[str, Iterable] = {}
+        self.load_tables()
 
     def connect_db(self):
         try:
@@ -32,9 +33,17 @@ class SQLiteClient(ClientBase):
         if res is None:
             return
         if isinstance(res, Iterable):
-            column_list = list(map(lambda x: x[0], res))
+            column_list = list(map(lambda x: x[1], res))
             self._tables[tablename] = column_list
             return column_list
+
+    def load_tables(self):
+        # table_keys = self.load_an_table('sqlite_master')
+        table_list = self.select('sqlite_master', [], fields=['name', 'tbl_name'])
+        for table in table_list:
+            self._tables[table['tbl_name']] = self.load_an_table(table['tbl_name'])
+        return self._tables
+
 
     def query(self, sql, show_sql=False, sql_params=None):
         dummy_sql = sql % tuple(sql_params) if sql_params is not None else sql
