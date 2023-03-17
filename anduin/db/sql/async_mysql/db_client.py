@@ -2,7 +2,7 @@
 # -*-coding:utf-8 -*-
 # Author     ：Campanula 梦芸 何
 import asyncio
-from typing import Iterable
+from typing import Iterable, List, Union, Tuple, Any
 
 import aiomysql
 from aiomysql import DictCursor
@@ -41,7 +41,7 @@ class AsyncMySQLClient(ClientBase):
         sql = 'show fields from ' + tablename
         res = await self.query(sql, show_sql=False)
         if isinstance(res,Iterable):
-            self._tables[tablename] = list(map(lambda x: x[0],res))
+            self._tables[tablename] = dict(zip(list(map(lambda x: x[0],res)),res))
         return res
 
     async def _load_tables(self, show_sql=False):
@@ -60,7 +60,14 @@ class AsyncMySQLClient(ClientBase):
         await self.db.commit()
 
     async def query(self, sql: str, show_sql=None, sql_params=None, return_dict=False):
-        dummy_sql = sql % tuple(sql_params) if sql_params is not None else sql
+        if sql_params is not None:
+            tmp = []
+            for i in sql_params:
+                tmp.append('"' + str(i) + '"')
+            dummy_sql = sql % tuple(tmp)
+        else:
+            dummy_sql = sql
+
         if return_dict is True:
             cursor = await self.db.cursor(DictCursor)
         else:
@@ -94,7 +101,7 @@ class AsyncMySQLClient(ClientBase):
             await self.load_an_table(table)
 
         if fields[0] == '*' and len(fields) == 1:
-            fieldList = self._tables[table]
+            fieldList = list(self._tables[table].keys())
             fields = fieldList
 
         sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update)
@@ -119,6 +126,10 @@ class AsyncMySQLClient(ClientBase):
                      for_update=False):
         if table not in self._tables:
             await self.load_an_table(table)
+
+        if fields[0] == '*' and len(fields) == 1:
+            fieldList = list(self._tables[table].keys())
+            fields = fieldList
 
         sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update)
         if sql is None:
@@ -145,12 +156,32 @@ class AsyncMySQLClient(ClientBase):
         # dbg('自动提交完毕')
         return r
 
-    async def delete(self, table, condition, or_cond=None, show_sql=False):
+    async def delete(self, table:str, conditions:List[Tuple[Union[str, Any]]], or_cond:Union[List[Tuple[
+        Union[str, Any]]],None]=None, show_sql:bool=False):
+        '''
+        删除数据
+        :params
+            conditions: 通过and连接的条件
+            [
+                 ('id', '=', 1)
+                 ('status', '!=', 1)
+            ]
+            or_cond: 通过or连接的条件
+            [
+                ('id', '=', 1)
+                ('status', '!=', 1)
+            ]
+            show_sql: 是否展示本次sql
+        '''
         sql = 'delete from %s where  ' % table
-        sql, sql_params = Parser.bind_conditions(sql, condition, or_cond)
+        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond)
         #  #
         r = await self.query(sql, show_sql, sql_params)
         return r
+
+    def show_database(self):
+        return self._tables
+
 
 if __name__ == '__main__':
     async def get_data():

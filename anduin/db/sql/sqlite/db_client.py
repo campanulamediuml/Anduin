@@ -2,8 +2,7 @@
 # -*-coding:utf-8 -*-
 # Author     ：Campanula 梦芸 何
 import sqlite3
-from typing import Iterable, Dict
-
+from typing import Iterable, Dict, List, Tuple, Any, Union
 
 from anduin.common import ENGINE_SQLITE,dbg,get_obj_name
 from anduin.parser.sql_parser import Parser
@@ -46,8 +45,14 @@ class SQLiteClient(ClientBase):
 
 
     def query(self, sql, show_sql=False, sql_params=None):
-        dummy_sql = sql % tuple(sql_params) if sql_params is not None else sql
         sql = sql.replace('binary', '')
+        if sql_params is not None:
+            tmp = []
+            for i in sql_params:
+                tmp.append('"' + str(i) + '"')
+            dummy_sql = sql % tuple(tmp)
+        else:
+            dummy_sql = sql
         sql = sql.replace('%s', '?')
         if show_sql is True:
             dbg('sql_id', id(self), dummy_sql)
@@ -129,7 +134,23 @@ class SQLiteClient(ClientBase):
         # dbg('自动提交完毕')
         return r
 
-    def delete(self, table, condition, or_cond=None, show_sql=False):
+    def delete(self, table:str, condition:List[Tuple[Union[str, Any]]], or_cond:Union[List[Tuple[
+        Union[str, Any]]],None]=None, show_sql=False):
+        '''
+        删除数据
+        :params
+            conditions: 通过and连接的条件
+            [
+                 ('id', '=', 1)
+                 ('status', '!=', 1)
+            ]
+            or_cond: 通过or连接的条件
+            [
+                ('id', '=', 1)
+                ('status', '!=', 1)
+            ]
+            show_sql: 是否展示本次sql
+        '''
         sql = 'delete from %s where  ' % table
         sql, sql_params = Parser.bind_conditions(sql, condition, or_cond)
         #  #

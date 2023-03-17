@@ -4,8 +4,9 @@
 import asyncio
 import json
 
-from anduin import Redis
-
+from anduin import Redis, ARedis
+from anduin import MySQL
+from anduin import SMySQL
 # Redis
 
 conf = {
@@ -15,7 +16,7 @@ conf = {
     # 'charset':'utf8'
 }
 
-redis_cm = Redis(conf)
+redis_cm = ARedis(conf)
 client = redis_cm.get_free_client()
 async def set_data(k,v):
     data = await client.set(k,v)

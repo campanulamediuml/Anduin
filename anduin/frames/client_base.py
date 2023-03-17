@@ -19,6 +19,7 @@ class ClientBase(abc.ABC):
         self.is_lock = False
         self.last_connect_time = int(time.time())
         self.db = None
+        self._tables = None
 
     @abc.abstractmethod
     def connect_db(self):

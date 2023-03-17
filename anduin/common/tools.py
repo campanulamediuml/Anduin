@@ -47,12 +47,13 @@ if sys.platform != 'win32':
         print(str(e))
     print('系统内核为',sys.platform,'本插件调用日志保存在%s' % get_filename())
 else:
-    print('windows下不支持持久化日志，请自行控制台生产')
-fh = open(fn, 'a')
+    print('windows下不支持持久化日志，忽略本通知')
+
 
 
 if sys.platform != 'win32':
     write_log = True
+    fh = open(fn, 'a')
 else:
     write_log = False
 
@@ -60,7 +61,7 @@ else:
 def dbg(*args):
     res = ['[%s Anduin Engine]' % time_to_str(int(time.time()))] + list(args)
     print(*res)
-    if write_log:
+    if write_log is True:
         for i in res:
             fh.write(str(i) + ' ')
         fh.write('\n')

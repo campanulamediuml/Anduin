@@ -49,15 +49,16 @@ from .db.sql.async_mysql.db_client_manager import AsyncMySQLManager
 from .db.sql.mysql.db_client_manager import MySQLManager
 from .db.sql.sqlite.db_client_manager import SQLiteManager
 
-AMySQL = AsyncMySQLManager
-MySQL = MySQLManager
 SQLite = SQLiteManager
+
+SMySQL = MySQL = MySQLManager
+SRedis = Redis = RedisManager
+# 同步
+
+AMySQL = AsyncMySQLManager
 ARedis = AsyncRedisManager
-Redis = RedisManager
+# 异步
 
-conf_map = {
-
-}
 def auto_init():
     dbg('自动初始化同步mysql')
     try:
@@ -74,7 +75,7 @@ if Data is None:
 
 
 
-__version__ = "8.4.2"
+__version__ = "8.4.7"
 
 
 

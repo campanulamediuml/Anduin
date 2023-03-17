@@ -2,7 +2,7 @@ import codecs
 import os
 from setuptools import setup, find_packages
 
-VER = "8.4.2"
+VER = "8.4.7"
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname),encoding='utf-8').read()

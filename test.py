@@ -1,6 +1,7 @@
 import asyncio
+from pprint import pprint
 
-from anduin import AMySQL
+from anduin import AMySQL, MySQL
 
 # session = Data.add_new_sql()
 
@@ -26,9 +27,16 @@ async def async_find_data():
     r = await Data.find('user',[('username','=','youtube1')])
     print(r)
 
-if __name__ == '__main__':
-    r = asyncio.run(async_find_data())
+def read_data():
+    r = MySQL(cnf)
+    session = r.get_free_client()
+    r = session.find('user',[('id','=',1)],show_sql=True)
+    # p = session._tables
     print(r)
+    # session.query()
+    # pprint(r)
+if __name__ == '__main__':
+    read_data()
     # Data = r.get_free_client()
     # r = Data.find('user', [('username', '=', 'youtube1')])
     # print(r)
