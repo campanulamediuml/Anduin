@@ -2,6 +2,8 @@
 # -*-coding:utf-8 -*-
 # Author     ：Campanula 梦芸 何
 from anduin import Data
+
+
 def create_bench():
     free_sql = Data.get_free_client()
     table_name = "mysql_bench.service_data_raw"
@@ -28,6 +30,7 @@ def create_bench():
         #
     ]
     free_sql.create(table_name, column, table_comment='')
+
 
 if __name__ == '__main__':
     create_bench()

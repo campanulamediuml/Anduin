@@ -1,13 +1,11 @@
 # !/usr/bin/env python
 # -*-coding:utf-8 -*-
 # Author     ：Campanula 梦芸 何
-import asyncio
 import time
 
-
-from anduin.common import dbg,get_db_index,ENGINE_MYSQL
+from anduin.common import dbg, get_db_index, ENGINE_MYSQL
 from anduin.db.sql.async_mysql.db_client import AsyncMySQLClient
-from anduin.frames.manager_base import ManagerBase, TIMEOUT
+from anduin.frames.manager_base import ManagerBase
 
 
 class AsyncMySQLManager(ManagerBase):
@@ -17,7 +15,7 @@ class AsyncMySQLManager(ManagerBase):
     async def create_connection(self):
         dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
         db_client = AsyncMySQLClient(self.host, self.user, self.password, self.port, self.database, ENGINE_MYSQL,
-                                     self.charset)
+                                     self.charset, self.get_time_out())
         await db_client.connect_db()
         my_pool = self.get_cur_client_pool_by_thread_id()
         sid = id(db_client)
@@ -30,7 +28,7 @@ class AsyncMySQLManager(ManagerBase):
         cur_time = int(time.time())
         my_pool = self.get_cur_client_pool_by_thread_id()
         for sid, client in my_pool.items():
-            if cur_time - client.last_connect_time < TIMEOUT:
+            if cur_time - client.last_connect_time < client.time_out:
                 if client.is_lock is False:
                     my_client = client
                     break
@@ -38,4 +36,3 @@ class AsyncMySQLManager(ManagerBase):
             my_client = await self.create_connection()
         my_client.lock()
         return my_client
-

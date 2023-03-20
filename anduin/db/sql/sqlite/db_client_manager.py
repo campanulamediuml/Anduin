@@ -3,9 +3,9 @@
 # Author     ：Campanula 梦芸 何
 import time
 
-from anduin.common import ENGINE_SQLITE,get_db_index,dbg
+from anduin.common import ENGINE_SQLITE, get_db_index, dbg
 from anduin.db.sql.sqlite.db_client import SQLiteClient
-from anduin.frames.manager_base import ManagerBase, TIMEOUT
+from anduin.frames.manager_base import ManagerBase
 
 
 class SQLiteManager(ManagerBase):
@@ -26,7 +26,7 @@ class SQLiteManager(ManagerBase):
         cur_time = int(time.time())
         my_pool = self.get_cur_client_pool_by_thread_id()
         for sid, client in my_pool.items():
-            if cur_time - client.last_connect_time < TIMEOUT:
+            if cur_time - client.last_connect_time < client.time_out:
                 if client.is_lock is False:
                     my_client = client
                     break

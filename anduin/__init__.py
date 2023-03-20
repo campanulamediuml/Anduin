@@ -57,6 +57,8 @@ SRedis = Redis = RedisManager
 
 AMySQL = AsyncMySQLManager
 ARedis = AsyncRedisManager
+
+
 # 异步
 
 def auto_init():
@@ -69,13 +71,9 @@ def auto_init():
     except Exception as e:
         dbg(e)
 
+
 Data = auto_init()
 if Data is None:
-    dbg('自动初始化同步mysql失败')
+    dbg('自动初始化同步mysql失败，如果不需要自动初始化，请忽略本通知')
 
-
-
-__version__ = "8.4.7"
-
-
-
+__version__ = "8.4.11"

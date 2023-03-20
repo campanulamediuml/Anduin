@@ -7,13 +7,14 @@ import threading
 import time
 from typing import List, Dict
 
-from anduin.common import dbg, get_obj_name
 from anduin.frames.client_base import ClientBase
 
-TIMEOUT = 30
 
 class ManagerBase(abc.ABC):
     def __init__(self, db_config):
+        self.TIMEOUT = db_config.get('timeout', None)
+        if self.TIMEOUT is None:
+            self.TIMEOUT = 30
         self.use_cache = False
         self.t_data = db_config
         self.host = db_config.get('host')
@@ -67,13 +68,19 @@ class ManagerBase(abc.ABC):
         cur_pool = self.get_cur_client_pool_by_thread_id()
         # print(cur_out_time_pool)
         # print(cur_pool)
-        for sid,client in cur_pool.items():
-            if cur_time - client.last_connect_time > TIMEOUT:
+        for sid, client in cur_pool.items():
+            if cur_time - client.last_connect_time > self.TIMEOUT:
                 if client.is_lock is False:
                     cur_out_time_pool.append(sid)
         for sid in cur_out_time_pool:
             if sid in cur_pool:
                 cur_pool.pop(sid)
 
+    def get_time_out(self):
+        return self.TIMEOUT
 
-
+    def set_time_out(self, time_out: int):
+        '''
+        设置超时时间
+        '''
+        self.TIMEOUT = time_out

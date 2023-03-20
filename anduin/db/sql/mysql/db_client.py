@@ -8,8 +8,8 @@ from pymysql import Connection
 from pymysql.cursors import DictCursor
 
 from anduin.common import ENGINE_MYSQL, dbg, get_obj_name
-from anduin.parser.sql_parser import Parser
 from anduin.frames.client_base import ClientBase
+from anduin.parser.sql_parser import Parser
 
 
 class MySQLClient(ClientBase):
@@ -26,7 +26,7 @@ class MySQLClient(ClientBase):
         try:
             res = pymysql.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname,
                                   charset=self._charset, port=self._port,
-                                  connect_timeout=60)
+                                  connect_timeout=self.time_out)
             dbg('连接创建成功', get_obj_name(self))
             return res
         except Exception as e:
@@ -65,7 +65,7 @@ class MySQLClient(ClientBase):
         '''
         self.db.commit()
 
-    def query(self, sql: str, show_sql=None, sql_params=None, return_dict=False):
+    def query(self, sql: str, show_sql=False, sql_params=None, return_dict=False):
         '''
         直接执行sql语句
         :param
@@ -118,7 +118,7 @@ class MySQLClient(ClientBase):
         return
 
     def find(self, table: str, conditions: List[Tuple], or_cond: Optional[List[Tuple]] = None,
-             fields: Union[Tuple, List] = ('*',), order:Optional[List[str]] = None, show_sql=False, for_update=False):
+             fields: Union[Tuple, List] = ('*',), order: Optional[List[str]] = None, show_sql=False, for_update=False):
         """
         传入参数：
             table:表名称
@@ -175,7 +175,8 @@ class MySQLClient(ClientBase):
         return result
 
     # 查找数据
-    def select(self, table:str, conditions:List[Tuple], or_cond: Optional[List] =None, fields=('*',), group=None, order=None, limit=None, show_sql=False,
+    def select(self, table: str, conditions: List[Tuple], or_cond: Optional[List] = None, fields=('*',), group=None,
+               order=None, limit=None, show_sql=False,
                for_update=False):
         """
         :params
@@ -242,7 +243,6 @@ class MySQLClient(ClientBase):
         return r
 
     def update(self, table, conditions, or_cond=None, params=None, show_sql=False):
-        # dbg('开始执行')
         """
         传入参数：
             table:表名称

@@ -21,7 +21,7 @@ start_time = int(time.time())
 ENGINE_DICT = {
     ENGINE_MYSQL: pymysql,
     ENGINE_SQLITE: sqlite3,
-    ENGINE_REDIS:aredis,
+    ENGINE_REDIS: aredis,
 }
 sql_clean_time = 45
 LOG_PATH = '%s/.anduin/' % os.path.expanduser('~')
@@ -39,17 +39,16 @@ def get_filename():
         fn = '%s\\.anduin\\%s-%s.log' % (os.path.expanduser('~'), sys.argv[0].split('\\')[-1], start_time)
     return fn
 
+
 fn = get_filename()
 if sys.platform != 'win32':
     try:
         os.mkdir('%s/.anduin' % os.path.expanduser('~'))
     except Exception as e:
         print(str(e))
-    print('系统内核为',sys.platform,'本插件调用日志保存在%s' % get_filename())
+    print('系统内核为', sys.platform, '本插件调用日志保存在%s' % get_filename())
 else:
     print('windows下不支持持久化日志，忽略本通知')
-
-
 
 if sys.platform != 'win32':
     write_log = True
@@ -69,7 +68,7 @@ def dbg(*args):
 
 
 def get_db_index(db_config_dict):
-    return '%s@%s:%s'%(db_config_dict.get('user'),db_config_dict.get('host'),db_config_dict.get('database'))
+    return '%s@%s:%s' % (db_config_dict.get('user'), db_config_dict.get('host'), db_config_dict.get('database'))
 
 
 def func_time(f):
@@ -121,11 +120,13 @@ def async_decorators(method):
 
     return wrapper
 
+
 def get_obj_name(obj: Any) -> str:
     """获取对象的名称"""
     if inspect.isfunction(obj) or inspect.isclass(obj):
         return obj.__name__
     return obj.__class__.__name__
+
 
 def create_rand_string(length=16):
     ran_str = ''.join(random.sample(string.ascii_letters + string.digits, length))

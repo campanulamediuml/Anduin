@@ -4,9 +4,9 @@
 import sqlite3
 from typing import Iterable, Dict, List, Tuple, Any, Union
 
-from anduin.common import ENGINE_SQLITE,dbg,get_obj_name
-from anduin.parser.sql_parser import Parser
+from anduin.common import ENGINE_SQLITE, dbg, get_obj_name
 from anduin.frames.client_base import ClientBase
+from anduin.parser.sql_parser import Parser
 
 
 class SQLiteClient(ClientBase):
@@ -18,13 +18,12 @@ class SQLiteClient(ClientBase):
 
     def connect_db(self):
         try:
-            res  =  sqlite3.connect(self._dbname)
+            res = sqlite3.connect(self._dbname)
             dbg('连接创建成功', get_obj_name(self))
             return res
         except Exception as e:
-            dbg('连接创建失败', e,get_obj_name(self))
+            dbg('连接创建失败', e, get_obj_name(self))
             return
-
 
     def load_an_table(self, tablename):
         sql = 'PRAGMA table_info(%s)' % tablename
@@ -42,7 +41,6 @@ class SQLiteClient(ClientBase):
         for table in table_list:
             self._tables[table['tbl_name']] = self.load_an_table(table['tbl_name'])
         return self._tables
-
 
     def query(self, sql, show_sql=False, sql_params=None):
         sql = sql.replace('binary', '')
@@ -134,8 +132,8 @@ class SQLiteClient(ClientBase):
         # dbg('自动提交完毕')
         return r
 
-    def delete(self, table:str, condition:List[Tuple[Union[str, Any]]], or_cond:Union[List[Tuple[
-        Union[str, Any]]],None]=None, show_sql=False):
+    def delete(self, table: str, condition: List[Tuple[Union[str, Any]]], or_cond: Union[List[Tuple[
+        Union[str, Any]]], None] = None, show_sql=False):
         '''
         删除数据
         :params

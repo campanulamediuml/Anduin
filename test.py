@@ -1,19 +1,15 @@
-import asyncio
-from pprint import pprint
-
 from anduin import AMySQL, MySQL
 
 # session = Data.add_new_sql()
 
-cnf =  {
-        'host': '127.0.0.1',
-        'user': 'root',
-        'password': '033248hyzh',
-        'database': 'eyewave_sec',
-        'port': 3306,
-        'engine':'mysql'
-    }
-
+cnf = {
+    'host': '127.0.0.1',
+    'user': 'root',
+    'password': '033248hyzh',
+    'database': 'eyewave_sec',
+    'port': 3306,
+    'engine': 'mysql'
+}
 
 
 # def find_data(r):
@@ -24,17 +20,20 @@ cnf =  {
 async def async_find_data():
     r = AMySQL(cnf)
     Data = await r.get_free_client()
-    r = await Data.find('user',[('username','=','youtube1')])
+    r = await Data.find('user', [('username', '=', 'youtube1')])
     print(r)
+
 
 def read_data():
     r = MySQL(cnf)
     session = r.get_free_client()
-    r = session.find('user',[('id','=',1)],show_sql=True)
+    r = session.find('user', [('id', '=', 1)], show_sql=True)
     # p = session._tables
     print(r)
     # session.query()
     # pprint(r)
+
+
 if __name__ == '__main__':
     read_data()
     # Data = r.get_free_client()
@@ -42,4 +41,3 @@ if __name__ == '__main__':
     # print(r)
     # loop = asyncio.get_event_loop()
     # loop.run_until_complete(async_find_data())
-

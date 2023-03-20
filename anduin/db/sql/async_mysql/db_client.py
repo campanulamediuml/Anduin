@@ -7,11 +7,10 @@ from typing import Iterable, List, Union, Tuple, Any
 import aiomysql
 from aiomysql import DictCursor
 
-
-from anduin.common import dbg, get_obj_name
 from anduin.common import ENGINE_MYSQL
-from anduin.parser.sql_parser import Parser
+from anduin.common import dbg, get_obj_name
 from anduin.frames.client_base import ClientBase
+from anduin.parser.sql_parser import Parser
 
 
 # from pymysql.cursors import DictCursor
@@ -23,25 +22,23 @@ class AsyncMySQLClient(ClientBase):
         self.db = None
         self._tables = {}
 
-
     async def connect_db(self):
         try:
             res = await aiomysql.connect(host=self._host, user=self._user, password=self._psw, db=self._dbname,
-                                     charset=self._charset, port=self._port)
-        # dbg('连接成功',type(res))
+                                         charset=self._charset, port=self._port, connect_timeout=self.time_out)
+            # dbg('连接成功',type(res))
             dbg('连接创建成功', get_obj_name(self))
             self.db = res
             return res
         except Exception as e:
-            dbg('连接创建失败',e,get_obj_name(self))
+            dbg('连接创建失败', e, get_obj_name(self))
             return
-
 
     async def load_an_table(self, tablename):
         sql = 'show fields from ' + tablename
         res = await self.query(sql, show_sql=False)
-        if isinstance(res,Iterable):
-            self._tables[tablename] = dict(zip(list(map(lambda x: x[0],res)),res))
+        if isinstance(res, Iterable):
+            self._tables[tablename] = dict(zip(list(map(lambda x: x[0], res)), res))
         return res
 
     async def _load_tables(self, show_sql=False):
@@ -76,7 +73,7 @@ class AsyncMySQLClient(ClientBase):
             dbg('sql_id', id(self), dummy_sql)
         try:
             if sql_params is not None:
-                await cursor.execute(sql,tuple(sql_params))
+                await cursor.execute(sql, tuple(sql_params))
             else:
                 await cursor.execute(sql)
             self.update_last_execute_time()
@@ -156,8 +153,8 @@ class AsyncMySQLClient(ClientBase):
         # dbg('自动提交完毕')
         return r
 
-    async def delete(self, table:str, conditions:List[Tuple[Union[str, Any]]], or_cond:Union[List[Tuple[
-        Union[str, Any]]],None]=None, show_sql:bool=False):
+    async def delete(self, table: str, conditions: List[Tuple[Union[str, Any]]], or_cond: Union[List[Tuple[
+        Union[str, Any]]], None] = None, show_sql: bool = False):
         '''
         删除数据
         :params
@@ -186,5 +183,7 @@ class AsyncMySQLClient(ClientBase):
 if __name__ == '__main__':
     async def get_data():
         return 'xxx'
+
+
     r = asyncio.run(get_data())
     print(r)

@@ -139,5 +139,3 @@ class Parser(object):
             sql_params = []
         sql_params = sql_params_header + sql_params
         return sql, sql_params
-
-

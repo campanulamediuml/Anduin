@@ -6,7 +6,8 @@ import time
 
 
 class ClientBase(abc.ABC):
-    def __init__(self, host='127.0.0.1', user='', psw='', port=0, dbname='', engine='mysql', charset='utf8mb4'):
+    def __init__(self, host='127.0.0.1', user='', psw='', port=0, dbname='', engine='mysql', charset='utf8mb4',
+                 time_out=30):
         self.id = id(self)
         self._host = host
         self._user = user
@@ -20,6 +21,7 @@ class ClientBase(abc.ABC):
         self.last_connect_time = int(time.time())
         self.db = None
         self._tables = None
+        self.time_out = time_out
 
     @abc.abstractmethod
     def connect_db(self):
