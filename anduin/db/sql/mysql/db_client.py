@@ -55,8 +55,11 @@ class MySQLClient(ClientBase):
         res = self.query(sql, show_sql)
         tables = list(map(lambda x: x[0], res))
         for table in tables:
-            table_name = self._dbname + '.' + table
-            r = self.load_an_table(table_name)
+            if '-' not in self._dbname:
+                table_name = self._dbname + '.' + table
+            else:
+                table_name = table
+            self.load_an_table(table_name)
             # self._tables[table_name] = r
 
     def commit(self):
@@ -293,6 +296,14 @@ class MySQLClient(ClientBase):
         sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond)
         #  #
         r = self.query(sql, show_sql, sql_params)
+        return r
+
+    def drop_table(self,tablename:str,show_sql=False):
+        '''
+        删除数据表
+        '''
+        sql = 'drop table if exists %s'%tablename
+        r = self.query(sql,show_sql=show_sql)
         return r
 
     def show_database(self):

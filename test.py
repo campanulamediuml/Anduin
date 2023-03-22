@@ -27,7 +27,7 @@ async def async_find_data():
 def read_data():
     r = MySQL(cnf)
     session = r.get_free_client()
-    r = session.find('user', [('id', '=', 1)], show_sql=True)
+    r = session.drop_table('user')
     # p = session._tables
     print(r)
     # session.query()

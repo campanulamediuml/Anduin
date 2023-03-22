@@ -154,3 +154,12 @@ class SQLiteClient(ClientBase):
         #  #
         r = self.query(sql, show_sql, sql_params)
         return r
+
+    def drop_table(self,tablename:str,show_sql=False):
+        '''
+        删除数据表
+        '''
+        sql = 'drop table if exists %s'%tablename
+        r = self.query(sql,show_sql=show_sql)
+        return r
+

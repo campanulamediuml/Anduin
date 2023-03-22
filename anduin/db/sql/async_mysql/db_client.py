@@ -46,7 +46,10 @@ class AsyncMySQLClient(ClientBase):
         res = await self.query(sql, show_sql)
         tables = list(map(lambda x: x[0], res))
         for table in tables:
-            table_name = self._dbname + '.' + table
+            if '-' not in self._dbname:
+                table_name = self._dbname + '.' + table
+            else:
+                table_name = table
             await self.load_an_table(table_name)
 
     async def release_lock(self):
@@ -178,6 +181,14 @@ class AsyncMySQLClient(ClientBase):
 
     def show_database(self):
         return self._tables
+
+    async def drop_table(self,tablename:str,show_sql=False):
+        '''
+        删除数据表
+        '''
+        sql = 'drop table if exists %s'%tablename
+        r = await self.query(sql,show_sql=show_sql)
+        return r
 
 
 if __name__ == '__main__':

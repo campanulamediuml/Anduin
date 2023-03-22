@@ -11,6 +11,10 @@ from anduin.frames.manager_base import ManagerBase
 class AsyncMySQLManager(ManagerBase):
     def __init__(self, config):
         super().__init__(config)
+        if self.charset is None:
+            self.charset = 'utf8mb4'
+        if self.port is None:
+            self.port = 3306
 
     async def create_connection(self):
         dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))

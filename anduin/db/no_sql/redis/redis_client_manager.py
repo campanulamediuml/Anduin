@@ -14,6 +14,10 @@ from anduin.frames.manager_base import ManagerBase
 class RedisManager(ManagerBase):
     def __init__(self, config):
         super().__init__(config)
+        if self.charset is None:
+            self.charset = 'utf-8'
+        if self.port is None:
+            self.port = 6379
 
     def create_connection(self) -> RedisClient:
         dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
