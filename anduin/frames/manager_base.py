@@ -12,6 +12,10 @@ from anduin.frames.client_base import ClientBase
 
 class ManagerBase(abc.ABC):
     def __init__(self, db_config):
+        '''
+        自动配置
+        @param db_config: 传入配置文件字典，生成配置模板
+        '''
         self.TIMEOUT = db_config.get('timeout', None)
         if self.TIMEOUT is None:
             self.TIMEOUT = 30

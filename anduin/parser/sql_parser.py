@@ -31,7 +31,7 @@ class Parser(object):
     # 拼接create sql
 
     @staticmethod
-    def insert_parser(table, content):
+    def insert_parser(table, content, table_fields=None):
         params = content
         keys = str(tuple(params.keys()))
         keys = keys.replace("'", "")
@@ -40,6 +40,8 @@ class Parser(object):
         sql_params = []
         sql = 'insert into %s%s values (' % (table, keys)
         for i in params.values():
+            if i not in table_fields:
+                return None, None
             sql_params.append(i)
         for _ in params.values():
             sql += '%s,'
@@ -50,13 +52,16 @@ class Parser(object):
     # insert规则拼接
 
     @staticmethod
-    def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None, for_update=False):
+    def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None, for_update=False,
+                  table_fields=None):
 
         fields = list(fields)
         # print(fields)
         sql = 'select %s from %s where  ' % (','.join(fields), table)
         # dbg(sql)
-        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond)
+        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond, table_fields=table_fields)
+        if sql is None:
+            return None, None
 
         if group is not None:
             sql += 'group by '
@@ -88,7 +93,7 @@ class Parser(object):
     # select 规则拼接
 
     @staticmethod
-    def bind_conditions(sql, conditions, or_cond):
+    def bind_conditions(sql, conditions, or_cond, table_fields):
         sql_params = []
         if conditions is None:
             conditions = []
@@ -100,6 +105,8 @@ class Parser(object):
         if len(conditions) > 0:
             for unit in conditions:
                 value = unit[2]
+                if unit[0] not in table_fields:
+                    return None, None
                 sql = sql + " %s %s binary " % (unit[0], unit[1]) + '%s'
                 sql_params += [value]
                 sql += "  and "
@@ -112,6 +119,8 @@ class Parser(object):
         if len(or_cond) > 0:
             for unit in or_cond:
                 value = unit[2]
+                if unit[0] not in table_fields:
+                    return None, None
                 sql = sql + " %s %s binary " % (unit[0], unit[1]) + '%s'
                 sql_params += [value]
                 sql += "  or "
@@ -122,18 +131,20 @@ class Parser(object):
         return sql, sql_params
 
     @staticmethod
-    def update_parser(table, conditions, or_cond, params):
+    def update_parser(table, conditions, or_cond, params, table_fields):
         if params == {} or params is None:
             # dbg('没有params，结束执行')
             return
         sql = 'update %s set ' % table
         sql_params_header = []
         for param, value in params.items():
+            if param not in table_fields:
+                return None, None
             sql = sql + " %s = " % param + '%s,'
             sql_params_header += [value]
 
         sql = sql[:-1] + ' where  '
-        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond)
+        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond, table_fields)
         # dbg(sql)
         if sql_params is None:
             sql_params = []

@@ -22,7 +22,7 @@ class AsyncRedisClient(ClientBase):
 
     def connect_db(self) -> Union[StrictRedis, None]:
         try:
-            res = aredis.StrictRedis(host=self._host, port=self._port, password=self._psw, db=self._dbname,)
+            res = aredis.StrictRedis(host=self._host, port=self._port, password=self._psw, db=self._dbname, )
             dbg('连接创建成功', get_obj_name(self))
             return res
         except Exception as e:

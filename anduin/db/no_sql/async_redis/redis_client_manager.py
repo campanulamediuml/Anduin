@@ -16,7 +16,6 @@ class AsyncRedisManager(ManagerBase):
         if self.port is None:
             self.port = 6379
 
-
     def create_connection(self) -> AsyncRedisClient:
         dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
         db_client = AsyncRedisClient(self.host, self.user, self.password, self.port, self.database, ENGINE_REDIS,

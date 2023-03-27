@@ -85,7 +85,8 @@ class SQLiteClient(ClientBase):
             fieldList = self._tables[table]
             fields = fieldList
 
-        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update)
+        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update,
+                                           self._tables[table])
         if sql is None:
             return
 
@@ -104,7 +105,8 @@ class SQLiteClient(ClientBase):
         if table not in self._tables:
             self.load_an_table(table)
 
-        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update)
+        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update,
+                                           self._tables[table])
         if sql is None:
             return
         #
@@ -121,13 +123,15 @@ class SQLiteClient(ClientBase):
         return result
 
     def insert(self, table, content, show_sql=False):
-        sql, sql_params = Parser.insert_parser(table, content)
+        sql, sql_params = Parser.insert_parser(table, content, table_fields=self._tables[table])
+        if sql is None:
+            return
         r = self.query(sql, show_sql, sql_params)
         return r
 
     def update(self, table, conditions, or_cond=None, params=None, show_sql=False):
         # dbg('开始执行')
-        sql, sql_params = Parser.update_parser(table, conditions, or_cond, params)
+        sql, sql_params = Parser.update_parser(table, conditions, or_cond, params, table_fields=self._tables[table])
         r = self.query(sql, show_sql, sql_params)
         # dbg('自动提交完毕')
         return r
@@ -150,16 +154,15 @@ class SQLiteClient(ClientBase):
             show_sql: 是否展示本次sql
         '''
         sql = 'delete from %s where  ' % table
-        sql, sql_params = Parser.bind_conditions(sql, condition, or_cond)
+        sql, sql_params = Parser.bind_conditions(sql, condition, or_cond, table_fields=self._tables[table])
         #  #
         r = self.query(sql, show_sql, sql_params)
         return r
 
-    def drop_table(self,tablename:str,show_sql=False):
+    def drop_table(self, tablename: str, show_sql=False):
         '''
         删除数据表
         '''
-        sql = 'drop table if exists %s'%tablename
-        r = self.query(sql,show_sql=show_sql)
+        sql = 'drop table if exists %s' % tablename
+        r = self.query(sql, show_sql=show_sql)
         return r
-

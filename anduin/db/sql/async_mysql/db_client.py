@@ -2,7 +2,7 @@
 # -*-coding:utf-8 -*-
 # Author     ：Campanula 梦芸 何
 import asyncio
-from typing import Iterable, List, Union, Tuple, Any
+from typing import Iterable, List, Union, Tuple
 
 import aiomysql
 from aiomysql import DictCursor
@@ -35,7 +35,7 @@ class AsyncMySQLClient(ClientBase):
             return
 
     async def load_an_table(self, tablename):
-        sql = 'show fields from ' + tablename
+        sql = 'show fields from ' + tablename + ''
         res = await self.query(sql, show_sql=False)
         if isinstance(res, Iterable):
             self._tables[tablename] = dict(zip(list(map(lambda x: x[0], res)), res))
@@ -46,10 +46,7 @@ class AsyncMySQLClient(ClientBase):
         res = await self.query(sql, show_sql)
         tables = list(map(lambda x: x[0], res))
         for table in tables:
-            if '-' not in self._dbname:
-                table_name = self._dbname + '.' + table
-            else:
-                table_name = table
+            table_name = table
             await self.load_an_table(table_name)
 
     async def release_lock(self):
@@ -98,13 +95,21 @@ class AsyncMySQLClient(ClientBase):
 
     async def find(self, table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False, for_update=False):
         if table not in self._tables:
-            await self.load_an_table(table)
+            r = await self.load_an_table(table)
+            if isinstance(r, Exception):
+                dbg('ERROR', r)
+                return r
 
         if fields[0] == '*' and len(fields) == 1:
             fieldList = list(self._tables[table].keys())
             fields = fieldList
+        else:
+            for field_name in fields:
+                if field_name not in self._tables[table].keys():
+                    return
 
-        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update)
+        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update,
+                                           table_fields=self._tables[table].keys())
         if sql is None:
             return
 
@@ -125,13 +130,21 @@ class AsyncMySQLClient(ClientBase):
                      show_sql=False,
                      for_update=False):
         if table not in self._tables:
-            await self.load_an_table(table)
+            r = await self.load_an_table(table)
+            if isinstance(r, Exception):
+                dbg('ERROR', r)
+                return r
 
         if fields[0] == '*' and len(fields) == 1:
             fieldList = list(self._tables[table].keys())
             fields = fieldList
+        else:
+            for field_name in fields:
+                if field_name not in self._tables[table].keys():
+                    return
 
-        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update)
+        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update,
+                                           self._tables[table].keys())
         if sql is None:
             return
         #
@@ -145,19 +158,33 @@ class AsyncMySQLClient(ClientBase):
         return res
 
     async def insert(self, table, content, show_sql=False):
+        if table not in self._tables:
+            r = await self.load_an_table(table)
+            if isinstance(r, Exception):
+                dbg('ERROR', r)
+                return r
         sql, sql_params = Parser.insert_parser(table, content)
+        if sql is None:
+            return
         r = await self.query(sql, show_sql, sql_params)
         return r
 
     async def update(self, table, conditions, or_cond=None, params=None, show_sql=False):
         # dbg('开始执行')
-        sql, sql_params = Parser.update_parser(table, conditions, or_cond, params)
+        if table not in self._tables:
+            r = await self.load_an_table(table)
+            if isinstance(r, Exception):
+                dbg('ERROR', r)
+                return r
+
+        sql, sql_params = Parser.update_parser(table, conditions, or_cond, params,
+                                               table_fields=self._tables[table].keys())
         r = await self.query(sql, show_sql, sql_params)
         # dbg('自动提交完毕')
         return r
 
-    async def delete(self, table: str, conditions: List[Tuple[Union[str, Any]]], or_cond: Union[List[Tuple[
-        Union[str, Any]]], None] = None, show_sql: bool = False):
+    async def delete(self, table: str, conditions: List[Tuple], or_cond: Union[List[Tuple], None] = None,
+                     show_sql: bool = False):
         '''
         删除数据
         :params
@@ -173,8 +200,16 @@ class AsyncMySQLClient(ClientBase):
             ]
             show_sql: 是否展示本次sql
         '''
+        if table not in self._tables:
+            r = await self.load_an_table(table)
+            if isinstance(r, Exception):
+                dbg('ERROR', r)
+                return r
+
         sql = 'delete from %s where  ' % table
-        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond)
+        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond, table_fields=self._tables[table].keys())
+        if sql is None:
+            return
         #  #
         r = await self.query(sql, show_sql, sql_params)
         return r
@@ -182,12 +217,13 @@ class AsyncMySQLClient(ClientBase):
     def show_database(self):
         return self._tables
 
-    async def drop_table(self,tablename:str,show_sql=False):
+    async def drop_table(self, tablename: str, show_sql=False):
         '''
         删除数据表
         '''
-        sql = 'drop table if exists %s'%tablename
-        r = await self.query(sql,show_sql=show_sql)
+
+        sql = 'drop table if exists %s' % tablename
+        r = await self.query(sql, show_sql=show_sql)
         return r
 
 

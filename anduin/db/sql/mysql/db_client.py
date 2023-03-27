@@ -41,8 +41,8 @@ class MySQLClient(ClientBase):
             字段2:(....)
         }
         '''
-        sql = 'show fields from ' + tablename
-        res = self.query(sql, show_sql=False)
+        sql = 'show fields from ' + tablename + ''
+        res = self.query(sql, show_sql=True)
         if isinstance(res, Iterable):
             self._tables[tablename] = dict(zip(list(map(lambda x: x[0], res)), res))
         return res
@@ -55,10 +55,7 @@ class MySQLClient(ClientBase):
         res = self.query(sql, show_sql)
         tables = list(map(lambda x: x[0], res))
         for table in tables:
-            if '-' not in self._dbname:
-                table_name = self._dbname + '.' + table
-            else:
-                table_name = table
+            table_name = table
             self.load_an_table(table_name)
             # self._tables[table_name] = r
 
@@ -155,13 +152,22 @@ class MySQLClient(ClientBase):
         """
 
         if table not in self._tables:
-            self.load_an_table(table)
+            r = self.load_an_table(table)
+            if isinstance(r, Exception):
+                dbg('ERROR', r)
+                return r
 
         if fields[0] == '*' and len(fields) == 1:
             fieldList = list(self._tables[table].keys())
             fields = fieldList
+        else:
+            for field_name in fields:
+                if field_name not in self._tables[table].keys():
+                    dbg(field_name, 'not in ', table)
+                    return
 
-        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update)
+        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update,
+                                           table_fields=self._tables[table].keys())
         if sql is None:
             return
 
@@ -209,13 +215,22 @@ class MySQLClient(ClientBase):
         """
 
         if table not in self._tables:
-            self.load_an_table(table)
+            r = self.load_an_table(table)
+            if isinstance(r, Exception):
+                dbg('ERROR', r)
+                return r
 
         if fields[0] == '*' and len(fields) == 1:
             fieldList = list(self._tables[table].keys())
             fields = fieldList
+        else:
+            for field_name in fields:
+                if field_name not in self._tables[table].keys():
+                    dbg(field_name, 'not in ', table)
+                    return
 
-        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update)
+        sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update,
+                                           table_fields=self._tables[table].keys())
         if sql is None:
             return
         #
@@ -241,7 +256,15 @@ class MySQLClient(ClientBase):
            show_sql:是否展示sql内容
                 默认False，开启后将会显示此次执行的sql内容并写入日志
         '''
-        sql, sql_params = Parser.insert_parser(table, content)
+        if table not in self._tables:
+            r = self.load_an_table(table)
+            if isinstance(r, Exception):
+                dbg('ERROR', r)
+                return r
+
+        sql, sql_params = Parser.insert_parser(table, content, table_fields=self._tables[table].keys())
+        if sql is None:
+            return
         r = self.query(sql, show_sql, sql_params)
         return r
 
@@ -269,13 +292,21 @@ class MySQLClient(ClientBase):
             show_sql:是否展示sql内容
                 默认False，开启后将会显示此次执行的sql内容并写入日志
         """
-        sql, sql_params = Parser.update_parser(table, conditions, or_cond, params)
+
+        if table not in self._tables:
+            r = self.load_an_table(table)
+            if isinstance(r, Exception):
+                dbg('ERROR', r)
+                return r
+
+        sql, sql_params = Parser.update_parser(table, conditions, or_cond, params,
+                                               table_fields=self._tables[table].keys())
         r = self.query(sql, show_sql, sql_params)
         # dbg('自动提交完毕')
         return r
 
-    def delete(self, table: str, conditions: List[Tuple[Union[str, Any]]], or_cond: Union[List[Tuple[
-        Union[str, Any]]], None] = None, show_sql: bool = False):
+    def delete(self, table: str, conditions: List[Tuple], or_cond: Union[List[Tuple], None] = None,
+               show_sql: bool = False):
         '''
         删除数据
         :params
@@ -293,17 +324,17 @@ class MySQLClient(ClientBase):
         '''
 
         sql = 'delete from %s where  ' % table
-        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond)
+        sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond, table_fields=self._tables[table].keys())
         #  #
         r = self.query(sql, show_sql, sql_params)
         return r
 
-    def drop_table(self,tablename:str,show_sql=False):
+    def drop_table(self, tablename: str, show_sql=False):
         '''
         删除数据表
         '''
-        sql = 'drop table if exists %s'%tablename
-        r = self.query(sql,show_sql=show_sql)
+        sql = 'drop table if exists %s' % tablename
+        r = self.query(sql, show_sql=show_sql)
         return r
 
     def show_database(self):

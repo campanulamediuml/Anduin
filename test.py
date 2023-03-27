@@ -27,7 +27,7 @@ async def async_find_data():
 def read_data():
     r = MySQL(cnf)
     session = r.get_free_client()
-    r = session.drop_table('user')
+    r = session.find('data_example.distr_relation', [('id = 1 --', '=', 'youtube1')])
     # p = session._tables
     print(r)
     # session.query()
