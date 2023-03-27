@@ -163,7 +163,7 @@ class AsyncMySQLClient(ClientBase):
             if isinstance(r, Exception):
                 dbg('ERROR', r)
                 return r
-        sql, sql_params = Parser.insert_parser(table, content)
+        sql, sql_params = Parser.insert_parser(table, content, self._tables[table].keys())
         if sql is None:
             return
         r = await self.query(sql, show_sql, sql_params)
