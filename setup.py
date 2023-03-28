@@ -3,7 +3,7 @@ import os
 
 from setuptools import setup, find_packages
 
-VER = "8.4.22"
+VER = "8.4.23"
 
 
 def read(fname):
@@ -34,7 +34,8 @@ if __name__ == '__main__':
             'pymysql>=0.9',
             'aredis>=1.1.0',
             'aiomysql>=0.0.21',
-            'redis>=4.0.0'
+            'redis>=4.0.0',
+            'mysqlclient>=2.0'
         ],
         include_package_data=True,
         zip_safe=True,

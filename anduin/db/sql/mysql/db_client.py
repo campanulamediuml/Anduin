@@ -1,15 +1,20 @@
 # !/usr/bin/env python
 # -*-coding:utf-8 -*-
 # Author     ：Campanula 梦芸 何
+import traceback
 from typing import Iterable, Union, List, Any, Tuple, Dict, Optional
 
-import pymysql
-from pymysql import Connection
-from pymysql.cursors import DictCursor
+from MySQLdb import Connection
+from MySQLdb.cursors import DictCursor
+
+# import pymysql
+# from pymysql import Connection
+# from pymysql.cursors import DictCursor
 
 from anduin.common import ENGINE_MYSQL, dbg, get_obj_name
 from anduin.frames.client_base import ClientBase
 from anduin.parser.sql_parser import Parser
+import MySQLdb
 
 
 class MySQLClient(ClientBase):
@@ -24,7 +29,7 @@ class MySQLClient(ClientBase):
         连接数据库，不需要手动调用
         '''
         try:
-            res = pymysql.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname,
+            res = MySQLdb.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname,
                                   charset=self._charset, port=self._port,
                                   connect_timeout=self.time_out)
             dbg('连接创建成功', get_obj_name(self))
@@ -95,6 +100,7 @@ class MySQLClient(ClientBase):
             self.update_last_execute_time()
             results = cursor.fetchall()
         except Exception as e:
+            traceback.print_exc()
             dbg('<--------DBERROR-------->')
             dbg(dummy_sql)
             dbg('execute fail!', str(e))
