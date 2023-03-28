@@ -4,8 +4,8 @@
 import traceback
 from typing import Iterable, Union, List, Any, Tuple, Dict, Optional
 
-from MySQLdb import Connection
-from MySQLdb.cursors import DictCursor
+# from MySQLdb import Connection
+# from MySQLdb.cursors import DictCursor
 
 # import pymysql
 # from pymysql import Connection
@@ -14,22 +14,36 @@ from MySQLdb.cursors import DictCursor
 from anduin.common import ENGINE_MYSQL, dbg, get_obj_name
 from anduin.frames.client_base import ClientBase
 from anduin.parser.sql_parser import Parser
+# import MySQLdb
+import pymysql
+from pymysql.cursors import DictCursor as pymysql_dict_cursor
+from MySQLdb.cursors import DictCursor as mysqldb_dict_cursor
 import MySQLdb
 
 
 class MySQLClient(ClientBase):
     def __init__(self, *args):
         super().__init__(*args)
+        print(self.db_engine)
+        dict_cursor = None
+        engine = None
+        if self.db_engine == 'pymysql':
+            self.dict_cursor = pymysql_dict_cursor
+            self.engine = pymysql
+        else:
+            self.dict_cursor = mysqldb_dict_cursor
+            self.engine = MySQLdb
+        print(self.engine.__name__)
         self.db = self.connect_db()
         self._tables = {}
         self._load_tables()
 
-    def connect_db(self) -> Union[Connection, None]:
+    def connect_db(self):
         '''
         连接数据库，不需要手动调用
         '''
         try:
-            res = MySQLdb.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname,
+            res = self.engine.connect(host=self._host, user=self._user, password=self._psw, database=self._dbname,
                                   charset=self._charset, port=self._port,
                                   connect_timeout=self.time_out)
             dbg('连接创建成功', get_obj_name(self))
@@ -68,6 +82,7 @@ class MySQLClient(ClientBase):
         '''
         commit本次事务
         '''
+        # print('commit')
         self.db.commit()
 
     def query(self, sql: str, show_sql=False, sql_params=None, return_dict=False):
@@ -87,12 +102,14 @@ class MySQLClient(ClientBase):
         else:
             dummy_sql = sql
         if return_dict is True:
-            cursor = self.db.cursor(DictCursor)
+            cursor = self.db.cursor(self.dict_cursor)
         else:
             cursor = self.db.cursor()
+        # print('get_cursor')
         if show_sql is True:
             dbg('sql_id', id(self), dummy_sql)
         try:
+            # print('xxxx')
             if sql_params is not None:
                 cursor.execute(sql, tuple(sql_params))
             else:

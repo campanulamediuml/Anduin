@@ -28,6 +28,7 @@ class ManagerBase(abc.ABC):
         self.charset = db_config.get('charset')
         self.port = db_config.get('port')
         self.connect_pool = {}
+        self.engine = db_config.get('engine')
         # {
         #     tid:{
         #         connect_sid:connect

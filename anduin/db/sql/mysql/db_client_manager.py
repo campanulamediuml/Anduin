@@ -18,7 +18,7 @@ class MySQLManager(ManagerBase):
 
     def create_connection(self):
         dbg('无可用空闲链接，创建链接...', get_db_index(self.t_data))
-        db_client = MySQLClient(self.host, self.user, self.password, self.port, self.database, ENGINE_MYSQL,
+        db_client = MySQLClient(self.host, self.user, self.password, self.port, self.database, self.engine,
                                 self.charset, self.get_time_out())
         my_pool = self.get_cur_client_pool_by_thread_id()
         sid = id(db_client)

@@ -35,6 +35,7 @@ class ClientBase(abc.ABC):
         self.is_lock = False
 
     def commit(self):
+        # print('commit')
         self.db.commit()
 
     def update_last_execute_time(self):
