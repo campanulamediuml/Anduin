@@ -42,7 +42,7 @@ class MySQLClient(ClientBase):
         }
         '''
         sql = 'show fields from ' + tablename + ''
-        res = self.query(sql, show_sql=True)
+        res = self.query(sql, show_sql=False)
         if isinstance(res, Iterable):
             self._tables[tablename] = dict(zip(list(map(lambda x: x[0], res)), res))
         return res
@@ -293,14 +293,18 @@ class MySQLClient(ClientBase):
                 默认False，开启后将会显示此次执行的sql内容并写入日志
         """
 
+        # print(self._tables)
         if table not in self._tables:
             r = self.load_an_table(table)
             if isinstance(r, Exception):
                 dbg('ERROR', r)
                 return r
 
-        sql, sql_params = Parser.update_parser(table, conditions, or_cond, params,
-                                               table_fields=self._tables[table].keys())
+        # print(self._tables)
+        # print(self._tables[table])
+        # print(self._tables[table].keys())
+
+        sql, sql_params = Parser.update_parser(table, conditions, or_cond, params, table_fields=self._tables[table].keys())
         r = self.query(sql, show_sql, sql_params)
         # dbg('自动提交完毕')
         return r

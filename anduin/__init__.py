@@ -76,4 +76,4 @@ Data = auto_init()
 if Data is None:
     dbg('自动初始化同步mysql失败，如果不需要自动初始化，请忽略本通知')
 
-__version__ = "8.4.19"
+__version__ = "8.4.22"

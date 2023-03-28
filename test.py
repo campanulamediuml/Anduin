@@ -30,6 +30,10 @@ def read_data():
     r = session.find('data_example.distr_relation', [('id = 1 --', '=', 'youtube1')])
     # p = session._tables
     print(r)
+    r = session.update('data_example.user',[('id','=',1)],params={'username':'xxxx'})
+    print(r)
+    r = session.find('data_example.user',[('id','=',1)])
+    print(r)
     # session.query()
     # pprint(r)
 

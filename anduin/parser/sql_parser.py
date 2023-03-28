@@ -33,6 +33,10 @@ class Parser(object):
     @staticmethod
     def insert_parser(table, content, table_fields=None):
         params = content
+        for i in params.keys():
+            if i not in table_fields:
+                # print(table_fields)
+                return None, None
         keys = str(tuple(params.keys()))
         keys = keys.replace("'", "")
         if 1 == len(params):
@@ -40,8 +44,6 @@ class Parser(object):
         sql_params = []
         sql = 'insert into %s%s values (' % (table, keys)
         for i in params.values():
-            if i not in table_fields:
-                return None, None
             sql_params.append(i)
         for _ in params.values():
             sql += '%s,'
@@ -131,10 +133,10 @@ class Parser(object):
         return sql, sql_params
 
     @staticmethod
-    def update_parser(table, conditions, or_cond, params, table_fields):
+    def update_parser(table, conditions, or_cond, params, table_fields=None):
         if params == {} or params is None:
             # dbg('没有params，结束执行')
-            return
+            return None,None
         sql = 'update %s set ' % table
         sql_params_header = []
         for param, value in params.items():
