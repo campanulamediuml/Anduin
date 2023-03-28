@@ -64,13 +64,26 @@ def read_data_2():
     session.release_lock()
     return res
 
+def insert_data():
+    session = r2.get_free_client()
+    insert_params = []
+    for i in range(0, 20):
+        r = {'user_id':1,'upper_id':2}
+        insert_params.append(r)
+    session.insert('distr_relation',insert_params,show_sql=True)
+    session.insert('distr_relation', {'user_id':9999,'upper_id':99999} , show_sql=True)
+    session.release_lock()
+
+
+
     # session.query()
     # pprint(r)
 
 
 if __name__ == '__main__':
-    read_data_1()
-    read_data_2()
+    # read_data_1()
+    # read_data_2()
+    insert_data()
     # Data = r.get_free_client()
     # r = Data.find('user', [('username', '=', 'youtube1')])
     # print(r)

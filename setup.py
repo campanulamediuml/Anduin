@@ -3,7 +3,7 @@ import os
 
 from setuptools import setup, find_packages
 
-VER = "8.4.24"
+VER = "8.4.25"
 
 
 def read(fname):

@@ -1,6 +1,8 @@
 # !/usr/bin/env python
 # -*-coding:utf-8 -*-
 # Author     ：Campanula 梦芸 何
+from typing import List
+
 from anduin.common.tools import ENGINE_SQLITE, ENGINE_MYSQL
 
 
@@ -32,7 +34,10 @@ class Parser(object):
 
     @staticmethod
     def insert_parser(table, content, table_fields=None):
-        params = content
+        if isinstance(content,List):
+            params = content[0]
+        else:
+            params = content
         for i in params.keys():
             if i not in table_fields:
                 # print(table_fields)
@@ -42,13 +47,26 @@ class Parser(object):
         if 1 == len(params):
             keys = keys[:-2] + ")"
         sql_params = []
-        sql = 'insert into %s%s values (' % (table, keys)
-        for i in params.values():
-            sql_params.append(i)
-        for _ in params.values():
-            sql += '%s,'
-        sql = sql[:-1]
-        sql += ')'
+        sql = 'insert into %s%s values ' % (table, keys)
+        if isinstance(content, List) is False:
+            sql += '('
+            for i in params.values():
+                sql_params.append(i)
+            for _ in params.values():
+                sql += '%s,'
+            sql = sql[:-1]
+            sql += ')'
+        else:
+            for params in content:
+                sql += '('
+                for i in params.values():
+                    sql_params.append(i)
+                for _ in params.values():
+                    sql += '%s,'
+                sql = sql[:-1]
+                sql += ')'
+                sql += ','
+            sql = sql[:-1]
         return sql, sql_params
 
     # insert规则拼接
