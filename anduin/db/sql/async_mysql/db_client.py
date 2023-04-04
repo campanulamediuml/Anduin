@@ -93,7 +93,7 @@ class AsyncMySQLClient(ClientBase):
         await self.commit()
         return
 
-    async def find(self, table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False, for_update=False):
+    async def find(self, table, conditions, or_cond=None, fields=('*',), order=None, show_sql=False, for_update=False,partition=''):
         if table not in self._tables:
             r = await self.load_an_table(table)
             if isinstance(r, Exception):
@@ -109,7 +109,7 @@ class AsyncMySQLClient(ClientBase):
                     return
 
         sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update,
-                                           table_fields=self._tables[table].keys())
+                                           table_fields=self._tables[table].keys(),partition=partition)
         if sql is None:
             return
 
@@ -128,7 +128,7 @@ class AsyncMySQLClient(ClientBase):
     # 查找数据
     async def select(self, table, conditions, or_cond=None, fields=('*',), group=None, order=None, limit=None,
                      show_sql=False,
-                     for_update=False):
+                     for_update=False,partition=''):
         if table not in self._tables:
             r = await self.load_an_table(table)
             if isinstance(r, Exception):
@@ -144,7 +144,7 @@ class AsyncMySQLClient(ClientBase):
                     return
 
         sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update,
-                                           self._tables[table].keys())
+                                           self._tables[table].keys(),partition=partition)
         if sql is None:
             return
         #

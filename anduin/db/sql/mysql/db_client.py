@@ -24,16 +24,16 @@ import MySQLdb
 class MySQLClient(ClientBase):
     def __init__(self, *args):
         super().__init__(*args)
-        print(self.db_engine)
-        dict_cursor = None
-        engine = None
+        # print(self.db_engine)
+        self.dict_cursor = None
+        self.engine = None
         if self.db_engine == 'pymysql':
             self.dict_cursor = pymysql_dict_cursor
             self.engine = pymysql
         else:
             self.dict_cursor = mysqldb_dict_cursor
             self.engine = MySQLdb
-        print(self.engine.__name__)
+        # print(self.engine.__name__)
         self.db = self.connect_db()
         self._tables = {}
         self._load_tables()
@@ -141,7 +141,7 @@ class MySQLClient(ClientBase):
         return
 
     def find(self, table: str, conditions: List[Tuple], or_cond: Optional[List[Tuple]] = None,
-             fields: Union[Tuple, List] = ('*',), order: Optional[List[str]] = None, show_sql=False, for_update=False):
+             fields: Union[Tuple, List] = ('*',), order: Optional[List[str]] = None, show_sql=False, for_update=False,partition=''):
         """
         传入参数：
             table:表名称
@@ -190,7 +190,7 @@ class MySQLClient(ClientBase):
                     return
 
         sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update,
-                                           table_fields=self._tables[table].keys())
+                                           table_fields=self._tables[table].keys(),partition=partition)
         if sql is None:
             return
 
@@ -209,7 +209,7 @@ class MySQLClient(ClientBase):
     # 查找数据
     def select(self, table: str, conditions: List[Tuple], or_cond: Optional[List] = None, fields=('*',), group=None,
                order=None, limit=None, show_sql=False,
-               for_update=False):
+               for_update=False,partition=''):
         """
         :params
             table:表名称
@@ -253,7 +253,7 @@ class MySQLClient(ClientBase):
                     return
 
         sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update,
-                                           table_fields=self._tables[table].keys())
+                                           table_fields=self._tables[table].keys(),partition=partition)
         if sql is None:
             return
         #

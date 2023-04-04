@@ -73,24 +73,26 @@ class Parser(object):
 
     @staticmethod
     def find_info(table, conditions, or_cond, fields=None, group=None, order=None, limit=None, for_update=False,
-                  table_fields=None):
+                  table_fields=None,partition=''):
 
         fields = list(fields)
         # print(fields)
-        sql = 'select %s from %s where  ' % (','.join(fields), table)
+        if len(partition.strip()) > 0:
+            partition = ' partition('+partition+') '
+        sql = 'select %s from %s %s where  ' % (','.join(fields), table,partition)
         # dbg(sql)
         sql, sql_params = Parser.bind_conditions(sql, conditions, or_cond, table_fields=table_fields)
         if sql is None:
             return None, None
 
         if group is not None:
-            sql += 'group by '
+            sql += ' group by '
             for i in group:
                 sql += '%s ,' % i
             sql = sql[:-1]
 
         if order is not None:
-            sql += 'order by '
+            sql += ' order by '
             count = 0
             for i in order:
                 if count % 2 == 0:
@@ -101,7 +103,7 @@ class Parser(object):
             sql = sql[:-1]
 
         if limit is not None:
-            sql += 'limit '
+            sql += ' limit '
             for i in limit:
                 sql += '%s, ' % i
             sql = sql[:-2]

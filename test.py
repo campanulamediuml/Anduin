@@ -42,7 +42,6 @@ r2.get_free_client().release_lock()
 
 @func_time
 def read_data_1():
-    print('r_1')
     session = r1.get_free_client()
     # session.commit()
     # print('...')
@@ -55,14 +54,14 @@ def read_data_1():
 
 @func_time
 def read_data_2():
-    print('r_2')
-    session = r2.get_free_client()
+    session = r1.get_free_client()
+    # session.commit()
+    # print('...')
     res = []
-    for i in range(0, 10000):
-        t = session.find('take_rec_his', [('id', '=', i)])
+    for i in range(0,10000):
+        t = session.find('data_example.take_rec_his',[('id','=',i)])
         res.append(t)
     session.release_lock()
-    return res
 
 def insert_data():
     session = r2.get_free_client()
@@ -74,6 +73,10 @@ def insert_data():
     session.insert('distr_relation', {'user_id':9999,'upper_id':99999} , show_sql=True)
     session.release_lock()
 
+def delete_data():
+    session = r2.get_free_client()
+    session.delete('distr_relation',[('user_id','in',tuple((1,2,3,4)))],show_sql = True)
+    # session.release_lock()
 
 
     # session.query()
@@ -83,7 +86,8 @@ def insert_data():
 if __name__ == '__main__':
     # read_data_1()
     # read_data_2()
-    insert_data()
+    # insert_data()
+    delete_data()
     # Data = r.get_free_client()
     # r = Data.find('user', [('username', '=', 'youtube1')])
     # print(r)
