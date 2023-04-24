@@ -6,7 +6,7 @@ from anduin.common.tools import time_to_str
 SETUP_PATH = './setup.py'
 INIT_PATH = './anduin/__init__.py'
 COPY_RIGHT_FILE = './COPYING.txt'
-ANDUIN_VER = '8.4.29'
+ANDUIN_VER = '8.4.31'
 
 
 # 7.1.13 : 7系列同步最后版本

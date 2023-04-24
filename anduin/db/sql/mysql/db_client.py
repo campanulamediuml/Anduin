@@ -108,21 +108,14 @@ class MySQLClient(ClientBase):
         # print('get_cursor')
         if show_sql is True:
             dbg('sql_id', id(self), dummy_sql)
-        try:
+
             # print('xxxx')
-            if sql_params is not None:
-                cursor.execute(sql, tuple(sql_params))
-            else:
-                cursor.execute(sql)
-            self.update_last_execute_time()
-            results = cursor.fetchall()
-        except Exception as e:
-            traceback.print_exc()
-            dbg('<--------DBERROR-------->')
-            dbg(dummy_sql)
-            dbg('execute fail!', str(e))
-            dbg('<--------DBERROR-------->')
-            results = e
+        if sql_params is not None:
+            cursor.execute(sql, tuple(sql_params))
+        else:
+            cursor.execute(sql)
+        self.update_last_execute_time()
+        results = cursor.fetchall()
         return results
 
     def create(self, table: str, columns: List[Tuple], table_comment: str = '', show_sql=False):
@@ -183,11 +176,11 @@ class MySQLClient(ClientBase):
         if fields[0] == '*' and len(fields) == 1:
             fieldList = list(self._tables[table].keys())
             fields = fieldList
-        else:
-            for field_name in fields:
-                if field_name not in self._tables[table].keys():
-                    dbg(field_name, 'not in ', table)
-                    return
+        # else:
+        #     for field_name in fields:
+        #         if field_name not in self._tables[table].keys():
+        #             dbg(field_name, 'not in ', table)
+        #             return
 
         sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, None, order, None, for_update,
                                            table_fields=self._tables[table].keys(),partition=partition)
@@ -246,11 +239,11 @@ class MySQLClient(ClientBase):
         if fields[0] == '*' and len(fields) == 1:
             fieldList = list(self._tables[table].keys())
             fields = fieldList
-        else:
-            for field_name in fields:
-                if field_name not in self._tables[table].keys():
-                    dbg(field_name, 'not in ', table)
-                    return
+        # else:
+        #     for field_name in fields:
+        #         if field_name not in self._tables[table].keys():
+        #             dbg(field_name, 'not in ', table)
+        #             return
 
         sql, sql_params = Parser.find_info(table, conditions, or_cond, fields, group, order, limit, for_update,
                                            table_fields=self._tables[table].keys(),partition=partition)

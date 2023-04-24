@@ -1,3 +1,5 @@
+import time
+
 from anduin import AMySQL, MySQL
 from anduin.common import func_time
 
@@ -75,19 +77,29 @@ def insert_data():
 
 def delete_data():
     session = r2.get_free_client()
-    session.delete('distr_relation',[('user_id','in',tuple((1,2,3,4)))],show_sql = True)
+    r = session.find('distr_relation',[('user_id','in',tuple((1,2,3,4)))],fields=['count(id)'])
+    print(r['count(id)'])
     # session.release_lock()
 
 
     # session.query()
     # pprint(r)
 
+def check_release():
+    while 1:
+        r1 = MySQL(cnf1)
+        session = r1.get_free_client()
+        session.release_lock()
+        time.sleep(1)
+
+
 
 if __name__ == '__main__':
+    check_release()
     # read_data_1()
     # read_data_2()
     # insert_data()
-    delete_data()
+    # delete_data()
     # Data = r.get_free_client()
     # r = Data.find('user', [('username', '=', 'youtube1')])
     # print(r)
