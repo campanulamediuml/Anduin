@@ -268,6 +268,7 @@ class MySQLClient(ClientBase):
             content:插入字段
                 数据类型为字典
                 {'key1':'value1','key2':'value2'}
+                支持使用列表内嵌套字典进行批量插入
 
            show_sql:是否展示sql内容
                 默认False，开启后将会显示此次执行的sql内容并写入日志
