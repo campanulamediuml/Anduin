@@ -33,6 +33,7 @@ class ClientBase(abc.ABC):
     def release_lock(self):
         self.commit()
         self.is_lock = False
+        print('release')
 
     def commit(self):
         # print('commit')
@@ -40,3 +41,9 @@ class ClientBase(abc.ABC):
 
     def update_last_execute_time(self):
         self.last_connect_time = int(time.time())
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.release_lock()
+
+    def __enter__(self):
+        return self

@@ -89,3 +89,4 @@ class ManagerBase(abc.ABC):
         设置超时时间
         '''
         self.TIMEOUT = time_out
+

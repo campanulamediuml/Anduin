@@ -1,7 +1,9 @@
+import asyncio
 import time
 
 from anduin import AMySQL, MySQL
-from anduin.common import func_time
+from anduin.common import func_time, ENGINE_MYSQL
+from anduin.db.sql.async_mysql.db_client import AsyncMySQLClient
 
 # session = Data.add_new_sql()
 
@@ -35,10 +37,10 @@ async def async_find_data():
     r = await Data.find('user', [('username', '=', 'youtube1')])
     print(r)
 
-r1 = MySQL(cnf1)
-r1.get_free_client().release_lock()
-r2 = MySQL(cnf2)
-r2.get_free_client().release_lock()
+# r1 = MySQL(cnf1)
+# r1.get_free_client().release_lock()
+# r2 = MySQL(cnf2)
+# r2.get_free_client().release_lock()
 
 
 
@@ -84,19 +86,32 @@ def delete_data():
 
     # session.query()
     # pprint(r)
+r1 = AMySQL(cnf1)
+async def check_release():
+    # while 1:
+    # r1 = AMySQL(cnf1)
+    # print(r1)
+    # res = await r1.get_free_client()
+    # print(id(res),hasattr(res,"__aexit__"))
+    async with AsyncMySQLClient(r1.host, r1.user, r1.password, r1.port, r1.database, ENGINE_MYSQL,
+                                     r1.charset, r1.get_time_out()) as session:
+        res = await session.find('invite_relation',[('id','=',3)])
+        print(res)
+    return
 
-def check_release():
-    while 1:
-        r1 = MySQL(cnf1)
-        session = r1.get_free_client()
-        session.release_lock()
-        time.sleep(1)
+
+
+
 
 
 
 if __name__ == '__main__':
-    check_release()
-    # read_data_1()
+    # check_release()
+    loop = asyncio.get_event_loop()
+    # loop.create_task(check_release())
+    loop.run_until_complete(check_release())
+    print('------')
+    time.sleep(10)    # read_data_1()
     # read_data_2()
     # insert_data()
     # delete_data()

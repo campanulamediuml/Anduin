@@ -56,6 +56,9 @@ class AsyncMySQLClient(ClientBase):
     async def commit(self):
         await self.db.commit()
 
+    async def close(self):
+        self.db.close()
+
     async def query(self, sql: str, show_sql=None, sql_params=None, return_dict=False):
         if sql_params is not None:
             tmp = []
@@ -225,6 +228,14 @@ class AsyncMySQLClient(ClientBase):
         sql = 'drop table if exists %s' % tablename
         r = await self.query(sql, show_sql=show_sql)
         return r
+
+    async def __aenter__(self):
+        await self.connect_db()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        # print(111)
+        await self.close()
 
 
 if __name__ == '__main__':
