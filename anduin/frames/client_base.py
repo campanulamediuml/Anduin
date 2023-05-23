@@ -33,7 +33,7 @@ class ClientBase(abc.ABC):
     def release_lock(self):
         self.commit()
         self.is_lock = False
-        print('release')
+        # print('release')
 
     def commit(self):
         # print('commit')
