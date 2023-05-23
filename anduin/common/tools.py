@@ -31,6 +31,11 @@ def time_to_str(times):
     date_array = datetime.datetime.utcfromtimestamp(times + (8 * 3600))
     return date_array.strftime("%Y-%m-%d %H:%M:%S")
 
+def str_to_time(time_str):
+    timeArray = time.strptime(str(time_str), "%Y-%m-%d %H:%M:%S")
+    time_stamp = int(time.mktime(timeArray))
+    return time_stamp
+
 
 def get_filename():
     if sys.platform != 'win32':
