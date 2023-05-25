@@ -57,6 +57,7 @@ class AsyncMySQLClient(ClientBase):
         await self.db.commit()
 
     async def close(self):
+        await self.release_lock()
         self.db.close()
 
     async def query(self, sql: str, show_sql=None, sql_params=None, return_dict=False):

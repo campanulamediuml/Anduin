@@ -17,8 +17,8 @@ from anduin.parser.sql_parser import Parser
 # import MySQLdb
 import pymysql
 from pymysql.cursors import DictCursor as pymysql_dict_cursor
-from MySQLdb.cursors import DictCursor as mysqldb_dict_cursor
-import MySQLdb
+# from MySQLdb.cursors import DictCursor as mysqldb_dict_cursor
+# import MySQLdb
 
 
 class MySQLClient(ClientBase):
@@ -27,12 +27,12 @@ class MySQLClient(ClientBase):
         # print(self.db_engine)
         self.dict_cursor = None
         self.engine = None
-        if self.db_engine == 'pymysql':
-            self.dict_cursor = pymysql_dict_cursor
-            self.engine = pymysql
-        else:
-            self.dict_cursor = mysqldb_dict_cursor
-            self.engine = MySQLdb
+        # if self.db_engine == 'pymysql':
+        self.dict_cursor = pymysql_dict_cursor
+        self.engine = pymysql
+        # else:
+        #     self.dict_cursor = mysqldb_dict_cursor
+        #     self.engine = MySQLdb
         # print(self.engine.__name__)
         self.db = self.connect_db()
         self._tables = {}
